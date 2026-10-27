@@ -58,19 +58,20 @@ export default function RootLayout() {
   }
 
   // ThemeProvider avoids the white flash when switching native tabs on iOS 26.
-  // Screen order matters: a logged-in user without a completed profile lands on profile-setup.
+  // Every guard has an explicit redirectTo: the default fallback is the first unguarded route in
+  // expo-router's own order (not this one), e.g. auth-callback, which redirects back to "/" and loops.
   return (
     <ProfileContext.Provider value={{ profile, setProfile: (next) => setLoaded({ userId: userId!, profile: next }) }}>
       <ThemeProvider value={DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Protected guard={!!profile?.onboarding_completed_at}>
+          <Stack.Protected guard={!!profile?.onboarding_completed_at} redirectTo={session ? '/profile-setup' : '/login'}>
             <Stack.Screen name="(tabs)" />
           </Stack.Protected>
           {/* Also reachable later from Settings, to edit the profile. */}
-          <Stack.Protected guard={!!session}>
+          <Stack.Protected guard={!!session} redirectTo="/login">
             <Stack.Screen name="profile-setup" />
           </Stack.Protected>
-          <Stack.Protected guard={!session}>
+          <Stack.Protected guard={!session} redirectTo="/">
             <Stack.Screen name="login" />
             <Stack.Screen name="register" />
           </Stack.Protected>

@@ -2,6 +2,7 @@ import { useState, type ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Icon } from '@/components/icon';
+import { t } from '@/lib/i18n';
 import { colors, radius, spacing, typography } from '@/theme';
 
 type Props = TextInputProps & {
@@ -34,7 +35,7 @@ export function TextField({ label, icon, hint, secure = false, style, ...props }
             onPress={() => setHidden(!hidden)}
             hitSlop={spacing.sm}
             accessibilityRole="button"
-            accessibilityLabel={hidden ? 'Mostra password' : 'Nascondi password'}>
+            accessibilityLabel={t(hidden ? 'textField.showPassword' : 'textField.hidePassword')}>
             <Icon
               sf={hidden ? 'eye.slash' : 'eye'}
               md={hidden ? 'visibility_off' : 'visibility'}

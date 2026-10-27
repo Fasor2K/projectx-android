@@ -1,19 +1,21 @@
-/** Messaggi in italiano per gli errori di Supabase Auth più comuni. */
+import { t } from '@/lib/i18n';
+
+/** Messaggi tradotti per gli errori di Supabase Auth più comuni. */
 export function authErrorMessage(code: string | undefined) {
   switch (code) {
     case 'invalid_credentials':
-      return 'Email o password non corrette.';
+      return t('authErrors.invalidCredentials');
     case 'email_not_confirmed':
-      return "Conferma la tua email con il link che ti abbiamo inviato, poi riprova.";
+      return t('authErrors.emailNotConfirmed');
     case 'user_already_exists':
     case 'email_exists':
-      return 'Esiste già un account con questa email.';
+      return t('authErrors.userExists');
     case 'weak_password':
-      return 'La password è troppo debole: usa almeno 8 caratteri.';
+      return t('authErrors.weakPassword', { min: 8 });
     case 'over_request_rate_limit':
     case 'over_email_send_rate_limit':
-      return 'Troppi tentativi. Riprova tra qualche minuto.';
+      return t('authErrors.rateLimit');
     default:
-      return 'Qualcosa è andato storto. Controlla la connessione e riprova.';
+      return t('authErrors.generic');
   }
 }

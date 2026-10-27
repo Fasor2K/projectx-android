@@ -9,6 +9,7 @@ import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { TextField } from '@/components/text-field';
 import { authErrorMessage } from '@/lib/auth-errors';
+import { t } from '@/lib/i18n';
 import { supabase } from '@/lib/supabase';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -25,7 +26,7 @@ export default function Register() {
   async function signUp() {
     const error = validate();
     if (error) {
-      Alert.alert('Controlla i dati', error);
+      Alert.alert(t('register.checkDataTitle'), error);
       return;
     }
     setLoading(true);
@@ -41,34 +42,34 @@ export default function Register() {
     });
     setLoading(false);
     if (authError) {
-      Alert.alert('Registrazione non riuscita', authErrorMessage(authError.code));
+      Alert.alert(t('register.failedTitle'), authErrorMessage(authError.code));
       return;
     }
     Alert.alert(
-      'Controlla la tua email',
-      `Ti abbiamo inviato un link a ${email.trim()}: aprilo per confermare l'account.`,
-      [{ text: 'OK', onPress: () => router.back() }],
+      t('register.checkEmailTitle'),
+      t('register.checkEmailMessage', { email: email.trim() }),
+      [{ text: t('common.ok'), onPress: () => router.back() }],
     );
   }
 
   function validate() {
-    if (!nickname.trim()) return 'Scegli un nickname.';
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return 'Inserisci un indirizzo email valido.';
-    if (password.length < MIN_PASSWORD_LENGTH) return `La password deve avere almeno ${MIN_PASSWORD_LENGTH} caratteri.`;
-    if (password !== confirm) return 'Le password non coincidono.';
-    if (!termsAccepted) return 'Per continuare accetta i Termini di servizio.';
+    if (!nickname.trim()) return t('register.errors.nickname');
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return t('register.errors.email');
+    if (password.length < MIN_PASSWORD_LENGTH) return t('register.errors.passwordLength', { min: MIN_PASSWORD_LENGTH });
+    if (password !== confirm) return t('register.errors.passwordMismatch');
+    if (!termsAccepted) return t('register.errors.terms');
   }
 
   return (
     <Screen contentContainerStyle={styles.content}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Indietro" hitSlop={spacing.sm}>
+      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t('common.back')} hitSlop={spacing.sm}>
         <GlassSurface interactive style={styles.back}>
           <Icon sf="chevron.left" md="arrow_back" tintColor={colors.text} />
         </GlassSurface>
       </Pressable>
 
       <Text style={[typography.display, styles.title]} accessibilityRole="header">
-        Registrazione
+        {t('register.title')}
       </Text>
 
       <Card>
@@ -77,15 +78,15 @@ export default function Register() {
             <Icon sf="person.badge.plus" md="person_add" />
           </View>
           <View style={styles.sectionText}>
-            <Text style={typography.title}>Il tuo account</Text>
-            <Text style={typography.caption}>Le credenziali che userai per accedere.</Text>
+            <Text style={typography.title}>{t('register.accountTitle')}</Text>
+            <Text style={typography.caption}>{t('register.accountSubtitle')}</Text>
           </View>
         </View>
         <TextField
-          label="Nickname"
+          label={t('register.nicknameLabel')}
           icon={{ sf: 'person', md: 'person' }}
-          placeholder="Scegli un nickname"
-          hint="Sarà il nome mostrato nella community."
+          placeholder={t('register.nicknamePlaceholder')}
+          hint={t('register.nicknameHint')}
           value={nickname}
           onChangeText={setNickname}
           autoCapitalize="none"
@@ -94,9 +95,9 @@ export default function Register() {
           textContentType="nickname"
         />
         <TextField
-          label="Email"
+          label={t('register.emailLabel')}
           icon={{ sf: 'envelope', md: 'mail' }}
-          placeholder="nome@esempio.it"
+          placeholder={t('login.emailPlaceholder')}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -106,9 +107,9 @@ export default function Register() {
           textContentType="emailAddress"
         />
         <TextField
-          label="Password"
+          label={t('register.passwordLabel')}
           icon={{ sf: 'lock', md: 'lock' }}
-          placeholder={`Almeno ${MIN_PASSWORD_LENGTH} caratteri`}
+          placeholder={t('register.passwordPlaceholder', { min: MIN_PASSWORD_LENGTH })}
           secure
           value={password}
           onChangeText={setPassword}
@@ -116,9 +117,9 @@ export default function Register() {
           textContentType="newPassword"
         />
         <TextField
-          label="Conferma password"
+          label={t('register.confirmLabel')}
           icon={{ sf: 'person.badge.key', md: 'how_to_reg' }}
-          placeholder="Ripeti la password"
+          placeholder={t('register.confirmPlaceholder')}
           secure
           value={confirm}
           onChangeText={setConfirm}
@@ -130,22 +131,25 @@ export default function Register() {
       <Card>
         <View style={styles.terms}>
           <Text style={[typography.caption, styles.termsText]}>
-            Accetto i <Text style={styles.termsLink}>Termini di servizio</Text> e confermo di aver letto
-            l&apos;<Text style={styles.termsLink}>Informativa sulla privacy</Text>.
+            {t('register.termsPrefix')}
+            <Text style={styles.termsLink}>{t('register.termsOfService')}</Text>
+            {t('register.termsMiddle')}
+            <Text style={styles.termsLink}>{t('register.privacyPolicy')}</Text>
+            {t('register.termsSuffix')}
           </Text>
           <Switch
             value={termsAccepted}
             onValueChange={setTermsAccepted}
             trackColor={{ true: colors.primary }}
-            accessibilityLabel="Accetto i Termini di servizio e l'Informativa sulla privacy"
+            accessibilityLabel={t('register.termsA11y')}
           />
         </View>
         <Text style={typography.caption}>
-          Foodity supporta la gestione quotidiana, ma non sostituisce il parere del medico.
+          {t('register.disclaimer')}
         </Text>
       </Card>
 
-      <Button title="Conferma" loading={loading} onPress={signUp} style={styles.submit} />
+      <Button title={t('register.submit')} loading={loading} onPress={signUp} style={styles.submit} />
     </Screen>
   );
 }

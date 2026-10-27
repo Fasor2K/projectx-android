@@ -8,6 +8,7 @@ import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { TextField } from '@/components/text-field';
 import { authErrorMessage } from '@/lib/auth-errors';
+import { t } from '@/lib/i18n';
 import { supabase } from '@/lib/supabase';
 import { colors, spacing, typography } from '@/theme';
 
@@ -19,35 +20,35 @@ export default function Login() {
   async function signIn() {
     const email = identifier.trim();
     if (!email || !password) {
-      Alert.alert('Dati mancanti', 'Inserisci email e password.');
+      Alert.alert(t('login.missingDataTitle'), t('login.missingDataMessage'));
       return;
     }
     // shortcut: Auth accetta solo l'email; il login col nickname richiede un endpoint che traduca nickname → email.
     if (!email.includes('@')) {
-      Alert.alert('Accesso col nickname', "L'accesso con il nickname non è ancora disponibile: usa la tua email.");
+      Alert.alert(t('login.nicknameLoginTitle'), t('login.nicknameLoginMessage'));
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     // Il successo lo gestisce il layout: la nuova sessione sblocca le schermate protette.
-    if (error) Alert.alert('Accesso non riuscito', authErrorMessage(error.code));
+    if (error) Alert.alert(t('login.failedTitle'), authErrorMessage(error.code));
   }
 
   return (
     <Screen contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={typography.brand}>Foodity</Text>
-        <Text style={[typography.eyebrow, styles.eyebrow]}>BENTORNATO</Text>
-        <Text style={typography.display}>Prenditi cura di te, un dato alla volta.</Text>
-        <Text style={typography.body}>Accedi al tuo profilo e ritrova subito ricette, persone e il tuo diario</Text>
+        <Text style={[typography.eyebrow, styles.eyebrow]}>{t('login.eyebrow')}</Text>
+        <Text style={typography.display}>{t('login.title')}</Text>
+        <Text style={typography.body}>{t('login.subtitle')}</Text>
       </View>
 
       <Card style={styles.card}>
         <TextField
-          label="Email o nickname"
+          label={t('login.identifierLabel')}
           icon={{ sf: 'person.crop.circle', md: 'account_circle' }}
-          placeholder="nome@esempio.it"
+          placeholder={t('login.emailPlaceholder')}
           value={identifier}
           onChangeText={setIdentifier}
           autoCapitalize="none"
@@ -57,9 +58,9 @@ export default function Login() {
           returnKeyType="next"
         />
         <TextField
-          label="Password"
+          label={t('login.passwordLabel')}
           icon={{ sf: 'lock', md: 'lock' }}
-          placeholder="Password"
+          placeholder={t('login.passwordPlaceholder')}
           secure
           value={password}
           onChangeText={setPassword}
@@ -72,11 +73,11 @@ export default function Login() {
           style={styles.forgot}
           hitSlop={spacing.sm}
           accessibilityRole="link"
-          onPress={() => Alert.alert('Password dimenticata', 'Il recupero della password non è ancora disponibile.')}>
-          <Text style={styles.link}>Password dimenticata?</Text>
+          onPress={() => Alert.alert(t('login.forgotPassword'), t('login.forgotPasswordUnavailable'))}>
+          <Text style={styles.link}>{t('login.forgotPassword')}</Text>
         </Pressable>
         <Button
-          title="Accedi"
+          title={t('login.submit')}
           icon={{ sf: 'arrow.right', md: 'arrow_forward' }}
           loading={loading}
           onPress={signIn}
@@ -84,15 +85,15 @@ export default function Login() {
       </Card>
 
       <Text style={[typography.body, styles.signup]}>
-        Non hai ancora un account?{' '}
+        {t('login.noAccount')}{' '}
         <Link href="/register" style={styles.signupLink}>
-          Registrati
+          {t('login.signUp')}
         </Link>
       </Text>
 
       <View style={styles.footer}>
         <Icon sf="checkmark.shield" md="verified_user" size={16} tintColor={colors.success} />
-        <Text style={typography.caption}>I tuoi dati sanitari restano protetti.</Text>
+        <Text style={typography.caption}>{t('login.dataProtected')}</Text>
       </View>
     </Screen>
   );

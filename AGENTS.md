@@ -6,6 +6,14 @@ Despite the repo name, this single codebase ships **both Android and iOS**. Ever
 
 Before building or changing any UI, read @UI.md: native look on each platform (Liquid Glass on iOS 26+ via native tabs and `GlassSurface`, with fallbacks for Android, older iOS and Reduce Transparency).
 
+## Translations (i18n)
+
+Every user-visible label (text, placeholders, alerts, accessibility labels, tab titles) must go through `t()` from `@/lib/i18n` — never hardcode strings. The app follows the device language: Italian or English, falling back to English.
+
+- Add each new key to both `src/locales/en.ts` (reference) and `src/locales/it.ts`; `it.ts` is typed as `typeof en`, so a missing key fails `tsc`.
+- Group keys by screen/component (`login.*`, `register.*`, …); interpolate with `%{name}`: `t('register.passwordPlaceholder', { min: 8 })`.
+- Brand names (Foodity) are not translated.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:

@@ -26,7 +26,8 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      ["expo-localization", { "supportedLocales": ["en", "it"] }]
+      ["expo-localization", { "supportedLocales": ["en", "it"] }],
+      ["expo-image-picker", { "cameraPermission": false, "microphonePermission": false }]
     ],
     "scheme": "foodity",
     "experiments": {

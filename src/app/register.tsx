@@ -1,12 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
-import { GlassSurface } from '@/components/glass-surface';
-import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
+import { SectionHeader } from '@/components/section-header';
 import { TextField } from '@/components/text-field';
 import { authErrorMessage } from '@/lib/auth-errors';
 import { t } from '@/lib/i18n';
@@ -62,26 +62,18 @@ export default function Register() {
 
   return (
     <Screen contentContainerStyle={styles.content}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t('common.back')} hitSlop={spacing.sm}>
-        <GlassSurface interactive style={styles.back}>
-          <Icon sf="chevron.left" md="arrow_back" tintColor={colors.text} />
-        </GlassSurface>
-      </Pressable>
+      <BackButton />
 
       <Text style={[typography.display, styles.title]} accessibilityRole="header">
         {t('register.title')}
       </Text>
 
       <Card>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionIcon}>
-            <Icon sf="person.badge.plus" md="person_add" />
-          </View>
-          <View style={styles.sectionText}>
-            <Text style={typography.title}>{t('register.accountTitle')}</Text>
-            <Text style={typography.caption}>{t('register.accountSubtitle')}</Text>
-          </View>
-        </View>
+        <SectionHeader
+          icon={{ sf: 'person.badge.plus', md: 'person_add' }}
+          title={t('register.accountTitle')}
+          subtitle={t('register.accountSubtitle')}
+        />
         <TextField
           label={t('register.nicknameLabel')}
           icon={{ sf: 'person', md: 'person' }}
@@ -158,33 +150,8 @@ const styles = StyleSheet.create({
   content: {
     gap: spacing.lg,
   },
-  back: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   title: {
     marginVertical: spacing.sm,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  sectionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
-  },
-  sectionText: {
-    flex: 1,
-    gap: 2,
   },
   terms: {
     flexDirection: 'row',

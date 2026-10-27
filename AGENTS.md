@@ -37,6 +37,10 @@ npx expo install --fix      # fix incompatible package versions
 
 Run lint and typecheck before declaring any task done.
 
+## Backend calls
+
+Tables in `public` have RLS with no policies, so `supabase.from()` reads nothing: the app talks to the backend only through Edge Functions (`supabase.functions.invoke`), documented in `projectx-be/ENDPOINTS.md`. Error bodies are `{ error: { code } }`; see `ApiError` in `src/lib/profile.ts`.
+
 ## Navigation & Routing
 
 - Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.

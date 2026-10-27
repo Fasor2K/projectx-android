@@ -9,12 +9,14 @@ type Props = TextInputProps & {
   label: string;
   icon?: Pick<ComponentProps<typeof Icon>, 'sf' | 'md'>;
   hint?: string;
+  /** Unità dopo il valore, es. "mg/dL". */
+  suffix?: string;
   /** Campo password: nasconde il testo e mostra il pulsante per vederlo. */
   secure?: boolean;
 };
 
-/** Campo di testo con etichetta, icona iniziale, nota sotto e toggle per le password. */
-export function TextField({ label, icon, hint, secure = false, style, ...props }: Props) {
+/** Campo di testo con etichetta, icona iniziale, unità, nota sotto e toggle per le password. */
+export function TextField({ label, icon, hint, suffix, secure = false, style, ...props }: Props) {
   const [hidden, setHidden] = useState(secure);
 
   return (
@@ -30,6 +32,7 @@ export function TextField({ label, icon, hint, secure = false, style, ...props }
           accessibilityLabel={label}
           {...props}
         />
+        {suffix && <Text style={typography.caption}>{suffix}</Text>}
         {secure && (
           <Pressable
             onPress={() => setHidden(!hidden)}

@@ -1,10 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function App() {
+import { GlassSurface } from '@/components/glass-surface';
+
+export default function Home() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+      <GlassSurface interactive style={styles.card}>
+        <Text>Foodity</Text>
+      </GlassSurface>
       <StatusBar style="auto" />
     </View>
   );
@@ -13,8 +17,12 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  card: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 20,
   },
 });

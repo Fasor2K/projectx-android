@@ -1,5 +1,11 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+Despite the repo name, this single codebase ships **both Android and iOS**. Every change must work on both platforms.
+
+## UI guidelines
+
+Before building or changing any UI, read @UI.md: native look on each platform (Liquid Glass on iOS 26+ via native tabs and `GlassSurface`, with fallbacks for Android, older iOS and Reduce Transparency).
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:

@@ -8,6 +8,7 @@ export const it: typeof en = {
   },
   tabs: {
     home: 'Home',
+    profile: 'Profilo',
   },
   login: {
     eyebrow: 'BENTORNATO',
@@ -63,6 +64,31 @@ export const it: typeof en = {
   },
   profile: {
     loadFailed: 'Non siamo riusciti a caricare il tuo profilo. Controlla la connessione e riprova.',
+    title: 'Il mio profilo',
+    settings: 'Impostazioni',
+    settingsUnavailable: 'Le impostazioni non sono ancora disponibili.',
+    userTypes: {
+      generic: 'Generico',
+      diabetic: 'Diabetico',
+      celiac: 'Celiaco',
+    },
+    stats: {
+      recipes: 'RICETTE',
+      rating: 'VALUTAZIONE',
+      ratingValue: '%{rating}/5★',
+      noRating: 'Nessuna',
+      followers: 'FOLLOWER',
+    },
+    sections: {
+      recipes: 'Le mie ricette',
+      saved: 'Ricette salvate',
+      posts: 'Post',
+    },
+    empty: {
+      recipes: 'Nessuna ricetta pubblicata',
+      saved: 'Nessuna ricetta salvata',
+      posts: 'Nessun post pubblicato',
+    },
   },
   profileSetup: {
     title: 'Completa il tuo profilo',

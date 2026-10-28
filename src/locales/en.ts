@@ -7,6 +7,7 @@ export const en = {
   },
   tabs: {
     home: 'Home',
+    profile: 'Profile',
   },
   login: {
     eyebrow: 'WELCOME BACK',
@@ -62,6 +63,31 @@ export const en = {
   },
   profile: {
     loadFailed: "We couldn't load your profile. Check your connection and try again.",
+    title: 'My profile',
+    settings: 'Settings',
+    settingsUnavailable: 'Settings are not available yet.',
+    userTypes: {
+      generic: 'General',
+      diabetic: 'Diabetic',
+      celiac: 'Celiac',
+    },
+    stats: {
+      recipes: 'RECIPES',
+      rating: 'RATING',
+      ratingValue: '%{rating}/5★',
+      noRating: 'None',
+      followers: 'FOLLOWERS',
+    },
+    sections: {
+      recipes: 'My recipes',
+      saved: 'Saved recipes',
+      posts: 'Posts',
+    },
+    empty: {
+      recipes: 'No published recipes',
+      saved: 'No saved recipes',
+      posts: 'No published posts',
+    },
   },
   profileSetup: {
     title: 'Complete your profile',

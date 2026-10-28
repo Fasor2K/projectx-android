@@ -38,17 +38,29 @@ export class ApiError extends Error {
   }
 }
 
-async function call(name: string, options: Parameters<typeof supabase.functions.invoke>[1]) {
-  const { data, error } = await supabase.functions.invoke<{ profile: Profile | null }>(name, options);
+/** Contatori della pagina Profilo (get-profile-stats). rating_avg null = "Nessuna". */
+export type ProfileStats = {
+  recipes_count: number;
+  rating_avg: number | null;
+  followers_count: number;
+};
+
+async function invoke<T>(name: string, options: Parameters<typeof supabase.functions.invoke>[1]) {
+  const { data, error } = await supabase.functions.invoke<T>(name, options);
   if (error) {
     const body = await error.context?.json?.().catch(() => undefined);
     throw new ApiError(body?.error?.code);
   }
-  return data!.profile;
+  return data!;
 }
 
-export const fetchProfile = () => call('get-profile', { method: 'GET' });
-export const saveProfile = (input: ProfileInput) => call('save-profile', { method: 'POST', body: input });
+type ProfileBody = { profile: Profile | null };
+
+export const fetchProfile = async () => (await invoke<ProfileBody>('get-profile', { method: 'GET' })).profile;
+export const saveProfile = async (input: ProfileInput) =>
+  (await invoke<ProfileBody>('save-profile', { method: 'POST', body: input })).profile;
+export const fetchProfileStats = async () =>
+  (await invoke<{ stats: ProfileStats }>('get-profile-stats', { method: 'GET' })).stats;
 
 /**
  * Profilo dell'utente loggato, letto dal layout radice.

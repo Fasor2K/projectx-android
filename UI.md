@@ -68,6 +68,6 @@ Regole d'uso:
 ## Stato attuale
 
 - `userInterfaceStyle` in `app.json` è `light`: l'app non segue ancora il tema scuro. Se si attiva il dark mode, aggiornare anche il `ThemeProvider` (`DarkTheme`) e il colore del fallback.
-- L'unico tab è `index` (Home, segnaposto).
+- Tab: `index` (Home, segnaposto) e `profile` (Profilo). Nel Profilo i contatori vengono da `get-profile-stats`, ricaricati a ogni focus; "Le mie ricette", "Ricette salvate" e "Post" mostrano solo l'empty state, e l'ingranaggio delle Impostazioni apre un avviso finché la schermata non esiste. Mancano ancora i tab Cerca e Diario e il pulsante "+".
 - La registrazione non controlla che il nickname sia libero: se è già preso, `save-profile` risponde `nickname_taken` alla fine dell'onboarding e l'app non offre ancora un modo per cambiarlo.
 - Accesso solo con email: il login col nickname richiede un endpoint che traduca nickname → email. "Password dimenticata?" e i link a Termini/Privacy non sono ancora collegati.

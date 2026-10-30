@@ -48,7 +48,7 @@ export const typography = {
   title: { fontSize: 17, fontWeight: '700', color: colors.text },
   body: { fontSize: 15, color: colors.textSecondary, lineHeight: 22 },
   label: { fontSize: 13, fontWeight: '600', color: colors.text },
-  caption: { fontSize: 12, color: colors.textSecondary, lineHeight: 17 },
+  caption: { fontSize: 13, color: colors.textSecondary, lineHeight: 18 },
   button: { fontSize: 16, fontWeight: '700', color: colors.onPrimary },
 } as const;
 

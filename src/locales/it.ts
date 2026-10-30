@@ -197,8 +197,10 @@ export const it: typeof en = {
   },
   account: {
     title: 'Il tuo account',
+    emailTitle: 'Email',
+    emailSubtitle: "L'email con cui ti sei registrato. Non si può cambiare.",
     nicknameTitle: 'Nickname',
-    saveNickname: 'Salva nickname',
+    saveNickname: 'Salva',
     nicknameSaved: 'Nickname aggiornato',
     passwordTitle: 'Password',
     passwordSubtitle: 'Inserisci la password attuale, poi scegli quella nuova.',

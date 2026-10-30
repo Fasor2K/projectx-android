@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
 
 import { BackButton } from '@/components/back-button';
@@ -16,15 +16,20 @@ import { radius, spacing, typography } from '@/theme';
 const MIN_PASSWORD_LENGTH = 8; // = minimum_password_length in supabase/config.toml
 const NICKNAME = /^\S{3,30}$/; // = NICKNAME in projectx-be/supabase/functions/update-nickname
 
-/** "Il tuo account": cambio di nickname (update-nickname) e password (Supabase Auth). */
+/** "Il tuo account": email (sola lettura), cambio di nickname (update-nickname) e password (Supabase Auth). */
 export default function Account() {
   const { profile, setProfile } = useProfile();
+  const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState(profile?.nickname ?? '');
   const [savingNickname, setSavingNickname] = useState(false);
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ''));
+  }, []);
 
   async function saveNickname() {
     if (!NICKNAME.test(nickname.trim())) {
@@ -77,6 +82,17 @@ export default function Account() {
       <Text style={[typography.display, styles.title]} accessibilityRole="header">
         {t('account.title')}
       </Text>
+
+      <Card>
+        <SectionHeader icon={{ sf: 'envelope', md: 'mail' }} title={t('account.emailTitle')} subtitle={t('account.emailSubtitle')} />
+        <TextField
+          label={t('register.emailLabel')}
+          icon={{ sf: 'envelope', md: 'mail' }}
+          value={email}
+          editable={false}
+          selectTextOnFocus
+        />
+      </Card>
 
       <Card>
         <SectionHeader

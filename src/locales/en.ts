@@ -196,8 +196,10 @@ export const en = {
   },
   account: {
     title: 'Your account',
+    emailTitle: 'Email',
+    emailSubtitle: 'The email you signed up with. It cannot be changed.',
     nicknameTitle: 'Nickname',
-    saveNickname: 'Save nickname',
+    saveNickname: 'Save',
     nicknameSaved: 'Nickname updated',
     passwordTitle: 'Password',
     passwordSubtitle: 'Enter your current password, then choose a new one.',

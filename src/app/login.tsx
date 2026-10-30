@@ -13,23 +13,17 @@ import { supabase } from '@/lib/supabase';
 import { colors, spacing, typography } from '@/theme';
 
 export default function Login() {
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function signIn() {
-    const email = identifier.trim();
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       Alert.alert(t('login.missingDataTitle'), t('login.missingDataMessage'));
       return;
     }
-    // shortcut: Auth accetta solo l'email; il login col nickname richiede un endpoint che traduca nickname → email.
-    if (!email.includes('@')) {
-      Alert.alert(t('login.nicknameLoginTitle'), t('login.nicknameLoginMessage'));
-      return;
-    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
     // Il successo lo gestisce il layout: la nuova sessione sblocca le schermate protette.
     if (error) Alert.alert(t('login.failedTitle'), authErrorMessage(error.code));
@@ -46,15 +40,16 @@ export default function Login() {
 
       <Card style={styles.card}>
         <TextField
-          label={t('login.identifierLabel')}
-          icon={{ sf: 'person.crop.circle', md: 'account_circle' }}
+          label={t('login.emailLabel')}
+          icon={{ sf: 'envelope', md: 'mail' }}
           placeholder={t('login.emailPlaceholder')}
-          value={identifier}
-          onChangeText={setIdentifier}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
-          autoComplete="username"
-          textContentType="username"
+          autoComplete="email"
+          textContentType="emailAddress"
           returnKeyType="next"
         />
         <TextField

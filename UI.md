@@ -73,4 +73,4 @@ Regole d'uso:
 - Tab: `index` (Home, segnaposto) e `profile` (Profilo). Nel Profilo i contatori vengono da `get-profile-stats`, ricaricati a ogni focus; "Le mie ricette", "Ricette salvate" e "Post" mostrano solo l'empty state, e l'ingranaggio apre le Impostazioni. Mancano ancora i tab Cerca e Diario e il pulsante "+".
 - La registrazione non controlla che il nickname sia libero: se è già preso, `save-profile` risponde `nickname_taken` alla fine dell'onboarding, e il nickname si può cambiare solo dalle Impostazioni, che però si raggiungono dopo l'onboarding.
 - Le preferenze di notifica e i promemoria glicemici si salvano, ma l'invio delle notifiche non esiste ancora. Termini, Privacy e FAQ sono segnaposto.
-- Accesso solo con email: il login col nickname richiede un endpoint che traduca nickname → email. "Password dimenticata?" non è ancora collegato.
+- "Password dimenticata?" non è ancora collegato.

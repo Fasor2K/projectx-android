@@ -15,7 +15,7 @@ export const it: typeof en = {
     eyebrow: 'BENTORNATO',
     title: 'Prenditi cura di te, un dato alla volta.',
     subtitle: 'Accedi al tuo profilo e ritrova subito ricette, persone e il tuo diario',
-    identifierLabel: 'Email o nickname',
+    emailLabel: 'Email',
     emailPlaceholder: 'nome@esempio.it',
     passwordLabel: 'Password',
     passwordPlaceholder: 'Password',
@@ -27,8 +27,6 @@ export const it: typeof en = {
     dataProtected: 'I tuoi dati sanitari restano protetti.',
     missingDataTitle: 'Dati mancanti',
     missingDataMessage: 'Inserisci email e password.',
-    nicknameLoginTitle: 'Accesso col nickname',
-    nicknameLoginMessage: "L'accesso con il nickname non è ancora disponibile: usa la tua email.",
     failedTitle: 'Accesso non riuscito',
   },
   register: {

@@ -14,7 +14,7 @@ export const en = {
     eyebrow: 'WELCOME BACK',
     title: 'Take care of yourself, one data point at a time.',
     subtitle: 'Sign in to your profile and get straight back to recipes, people and your diary',
-    identifierLabel: 'Email or nickname',
+    emailLabel: 'Email',
     emailPlaceholder: 'name@example.com',
     passwordLabel: 'Password',
     passwordPlaceholder: 'Password',
@@ -26,8 +26,6 @@ export const en = {
     dataProtected: 'Your health data stays protected.',
     missingDataTitle: 'Missing details',
     missingDataMessage: 'Enter your email and password.',
-    nicknameLoginTitle: 'Sign in with nickname',
-    nicknameLoginMessage: 'Signing in with your nickname is not available yet: use your email.',
     failedTitle: 'Sign-in failed',
   },
   register: {

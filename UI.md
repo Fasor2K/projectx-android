@@ -51,7 +51,7 @@ Regole d'uso:
 
 - Colori, gradiente di sfondo, raggi, spaziature, testi e ombra stanno in [src/theme.ts](src/theme.ts): non scrivere colori o misure a mano nelle schermate, aggiungi il token lì.
 - Componenti generici in `src/components/`:
-  - `Screen`: sfondo a gradiente, safe area, scroll che segue la tastiera.
+  - `Screen`: sfondo a gradiente, scroll che segue la tastiera; il contenuto scorre sotto le safe area (status bar, home indicator). Il padding del contenuto include già gli inset.
   - `Card`: contenitore bianco con bordo e ombra.
   - `TextField`: etichetta, icona, unità (`suffix`), nota sotto, `secure` per le password con il toggle mostra/nascondi.
   - `Button`: pulsante primario con icona e stato `loading`.

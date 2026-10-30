@@ -1,19 +1,28 @@
 import { ScrollView, StyleSheet, type ScrollViewProps } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { backgroundGradient, spacing } from '@/theme';
 
-/** Schermata con lo sfondo a gradiente dell'app, safe area e contenuto scrollabile sopra la tastiera. */
+/**
+ * Schermata con lo sfondo a gradiente dell'app e contenuto scrollabile sopra la tastiera.
+ * Il contenuto scorre anche sotto le safe area.
+ */
 export function Screen({ contentContainerStyle, ...props }: ScrollViewProps) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={styles.root}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={[styles.content, contentContainerStyle]}
-        {...props}
-      />
-    </SafeAreaView>
+    <ScrollView
+      style={styles.root}
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl },
+        contentContainerStyle,
+      ]}
+      scrollIndicatorInsets={{ top: insets.top, bottom: insets.bottom }}
+      {...props}
+    />
   );
 }
 
@@ -24,6 +33,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    padding: spacing.xl,
+    paddingHorizontal: spacing.xl,
   },
 });

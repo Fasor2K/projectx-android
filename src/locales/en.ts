@@ -190,6 +190,10 @@ export const en = {
       'Your profile, diary, posts, drafts and private recipes will be deleted for good. Your public recipes stay visible without your name. This cannot be undone.',
     deleteConfirm: 'Delete',
     signOut: 'Sign out',
+    credits: {
+      off: 'Product data from Open Food Facts, available under the Open Database License (ODbL).',
+      crea: 'Generic food data from CREA, Food composition tables (2019 update).',
+    },
     errors: {
       title: 'Not saved',
     },

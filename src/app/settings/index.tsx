@@ -16,6 +16,11 @@ import { colors, radius, spacing, typography } from '@/theme';
 
 const SUPPORT_EMAIL = 'info@foodity.it';
 
+const CREDITS = [
+  { key: 'off', url: 'https://world.openfoodfacts.org' },
+  { key: 'crea', url: 'https://www.alimentinutrizione.it' },
+] as const;
+
 type IconName = Pick<ComponentProps<typeof Icon>, 'sf' | 'md'>;
 
 const toggles = ['recipe_feedback', 'post_comments', 'app_updates'] as const;
@@ -158,6 +163,19 @@ export default function Settings() {
           <Text style={styles.signOut}>{t('settings.signOut')}</Text>
         </Pressable>
       </View>
+
+      {/* Citazione delle fonti del catalogo alimenti: la richiedono la licenza ODbL di OFF e le condizioni d'uso di CREA. */}
+      <View style={styles.credits}>
+        {CREDITS.map(({ key, url }) => (
+          <Text
+            key={key}
+            style={typography.caption}
+            onPress={() => Linking.openURL(url).catch(() => {})}
+            accessibilityRole="link">
+            {t(`settings.credits.${key}`)}
+          </Text>
+        ))}
+      </View>
     </Screen>
   );
 }
@@ -236,6 +254,9 @@ const styles = StyleSheet.create({
   footer: {
     gap: spacing.lg,
     marginTop: spacing.sm,
+  },
+  credits: {
+    gap: spacing.sm,
   },
   delete: {
     color: colors.danger,

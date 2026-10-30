@@ -191,6 +191,10 @@ export const it: typeof en = {
       'Profilo, diario, post, bozze e ricette private verranno eliminati definitivamente. Le ricette pubbliche restano visibili senza il tuo nome. Non si può annullare.',
     deleteConfirm: 'Elimina',
     signOut: "Esci dall'account",
+    credits: {
+      off: 'Dati dei prodotti da Open Food Facts, disponibili con licenza Open Database License (ODbL).',
+      crea: 'Dati degli alimenti generici da CREA, Tabelle di composizione degli alimenti (aggiornamento 2019).',
+    },
     errors: {
       title: 'Modifica non salvata',
     },

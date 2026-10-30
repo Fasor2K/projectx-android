@@ -223,7 +223,7 @@ export const en = {
     mealTimes: 'Meal times',
     mealTimesHint: 'Tap a meal to choose hours and minutes.',
     editTime: 'Change time',
-    noAlarm: 'No alarm',
+    noAlarm: 'No notification',
     meals: {
       breakfast: 'Breakfast',
       lunch: 'Lunch',

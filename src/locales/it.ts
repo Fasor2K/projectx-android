@@ -224,7 +224,7 @@ export const it: typeof en = {
     mealTimes: 'Orari dei pasti',
     mealTimesHint: 'Tocca un pasto per scegliere ore e minuti.',
     editTime: 'Modifica orario',
-    noAlarm: 'Nessuna sveglia',
+    noAlarm: 'Nessuna notifica',
     meals: {
       breakfast: 'Colazione',
       lunch: 'Pranzo',

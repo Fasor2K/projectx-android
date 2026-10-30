@@ -1,12 +1,11 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
-import { SwitchRow } from '@/components/switch-row';
 import { t } from '@/lib/i18n';
 import { mealIcons } from '@/lib/meal-icons';
 import { defaultReminderTime, mealTypes, saveGlucoseReminder, useNotifications, type MealType } from '@/lib/notifications';
@@ -27,8 +26,8 @@ export default function ReminderTime() {
   const { notifications, setNotifications } = useNotifications();
   const reminder = notifications?.glucose_reminders.find((r) => r.meal_type === meal);
   const [time, setTime] = useState(reminder?.time_of_day ?? defaultReminderTime[meal]);
-  // Nessuna riga = nessuna sveglia.
-  const [enabled, setEnabled] = useState(reminder?.enabled ?? false);
+  // Interruttore acceso = notifica attiva; acceso anche per un pasto mai configurato.
+  const [enabled, setEnabled] = useState(reminder?.enabled ?? true);
   const [saving, setSaving] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -58,13 +57,17 @@ export default function ReminderTime() {
         <View style={styles.icon}>
           <Icon {...mealIcons[meal]} size={18} />
         </View>
-        <View>
+        <View style={styles.mealText}>
           <Text style={typography.title}>{t(`reminders.meals.${meal}`)}</Text>
           <Text style={typography.caption}>{t('reminders.repeat')}</Text>
         </View>
+        <Switch
+          value={enabled}
+          onValueChange={setEnabled}
+          trackColor={{ true: colors.primary }}
+          accessibilityLabel={t('reminders.enable')}
+        />
       </View>
-
-      <SwitchRow title={t('reminders.noAlarm')} value={!enabled} onValueChange={(off) => setEnabled(!off)} />
 
       {enabled &&
         (Platform.OS === 'ios' ? (
@@ -111,6 +114,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+  },
+  mealText: {
+    flex: 1,
   },
   icon: {
     width: 36,

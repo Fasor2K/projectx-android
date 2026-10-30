@@ -2,6 +2,28 @@ This is an Expo/React Native mobile application. Prioritize mobile-first pattern
 
 Despite the repo name, this single codebase ships **both Android and iOS**. Every change must work on both platforms.
 
+## Repos and shared docs
+
+This is the Foodity app. The backend is the sibling repo `projectx-be` (Supabase project `ddualzqusbgasmjlyebb`, GitHub `Fasor2K/projectx-be`); the two are independent git repos, usually side by side in a `projectx` folder that is not a repo. Backend rules, deploy and process are in `../projectx-be/CLAUDE.md`; database schema in `../projectx-be/DATABASE.md`; endpoints in `../projectx-be/ENDPOINTS.md` (if an endpoint is not there, it is not documented). Never change the schema or deploy from here: follow `projectx-be/CLAUDE.md`.
+
+The project's `.md` files (in both repos) are the shared memory: keep them aligned with the work **without the user having to ask**, in the same change, before declaring the work done, when:
+
+- a change makes what they say false or incomplete (schema, endpoints, components, commands, flows, folder structure);
+- the user gives a new guideline, rule or decision to follow in future (or corrects how you work): write it in the right file, not only in the reply.
+
+Where things go:
+
+- App rules (code, i18n, navigation, commands) → this file
+- UI and style rules → `UI.md`
+- Schema, enums, constraints, application rules and decisions (dated) → `projectx-be/DATABASE.md`
+- Endpoint contract, logic and history → `projectx-be/ENDPOINTS.md`
+- Backend deploy and work process → `projectx-be/CLAUDE.md`
+- Rules for both repos → this file **and** `projectx-be/CLAUDE.md`, with the same content (there is no longer a shared file outside the repos)
+
+Keep the files concise: edit or replace the existing rule instead of adding a duplicate or contradictory one, and remove what is no longer true. Don't document what the code already tells. If it's unclear which file a rule belongs in, pick the one closest to its scope and say so in the summary.
+
+Project skills in `.claude/skills/`: `commit` and `commit-and-push` commit (and push) this repo's changes; `projectx-be` has skills with the same names for its repo, plus `supabase-endpoint`.
+
 ## UI guidelines
 
 Before building or changing any UI, read @UI.md: native look on each platform (Liquid Glass on iOS 26+ via native tabs and `GlassSurface`, with fallbacks for Android, older iOS and Reduce Transparency).

@@ -45,7 +45,7 @@ export type ProfileStats = {
   followers_count: number;
 };
 
-async function invoke<T>(name: string, options: Parameters<typeof supabase.functions.invoke>[1]) {
+export async function invoke<T>(name: string, options: Parameters<typeof supabase.functions.invoke>[1]) {
   const { data, error } = await supabase.functions.invoke<T>(name, options);
   if (error) {
     const body = await error.context?.json?.().catch(() => undefined);
@@ -61,6 +61,9 @@ export const saveProfile = async (input: ProfileInput) =>
   (await invoke<ProfileBody>('save-profile', { method: 'POST', body: input })).profile;
 export const fetchProfileStats = async () =>
   (await invoke<{ stats: ProfileStats }>('get-profile-stats', { method: 'GET' })).stats;
+export const updateNickname = async (nickname: string) =>
+  (await invoke<ProfileBody>('update-nickname', { method: 'POST', body: { nickname } })).profile;
+export const deleteAccount = () => invoke<{ deleted: true }>('delete-account', { method: 'POST' });
 
 /**
  * Profilo dell'utente loggato, letto dal layout radice.

@@ -5,6 +5,7 @@ export const it: typeof en = {
     ok: 'OK',
     back: 'Indietro',
     retry: 'Riprova',
+    cancel: 'Annulla',
   },
   tabs: {
     home: 'Home',
@@ -66,7 +67,6 @@ export const it: typeof en = {
     loadFailed: 'Non siamo riusciti a caricare il tuo profilo. Controlla la connessione e riprova.',
     title: 'Il mio profilo',
     settings: 'Impostazioni',
-    settingsUnavailable: 'Le impostazioni non sono ancora disponibili.',
     userTypes: {
       generic: 'Generico',
       diabetic: 'Diabetico',
@@ -92,6 +92,7 @@ export const it: typeof en = {
   },
   profileSetup: {
     title: 'Completa il tuo profilo',
+    editTitle: 'Modifica il tuo profilo',
     subtitle: 'Pochi dettagli ci aiutano a mostrarti informazioni più utili. Potrai modificarli in qualsiasi momento.',
     addPhoto: 'Aggiungi una foto profilo',
     bioTitle: 'Descrizione profilo',
@@ -138,6 +139,106 @@ export const it: typeof en = {
     note: 'Il range consigliato va concordato con il tuo team diabetologico.',
     confirm: 'Conferma',
   },
+  settings: {
+    title: 'Impostazioni',
+    subtitle: 'Gestisci il tuo account, le tue informazioni e le preferenze di notifica.',
+    account: {
+      title: 'Il tuo account',
+      subtitle: 'Modifica le credenziali e i dati principali del profilo.',
+    },
+    profile: {
+      title: 'Profilo',
+      subtitle:
+        'Aggiorna la foto, la descrizione, le informazioni sul tuo tipo di utente, community e ciò che vuoi rendere visibile agli altri utenti.',
+    },
+    notifications: {
+      title: 'Notifiche',
+      subtitle: 'Scegli cosa ricevere e quando.',
+      recipe_feedback: {
+        title: 'Recensioni e segnalazioni alle ricette',
+        subtitle: 'Ricevi avvisi quando qualcuno recensisce o segnala la tua ricetta.',
+      },
+      post_comments: {
+        title: 'Commenti ai post',
+        subtitle: 'Ricevi avvisi quando qualcuno commenta i tuoi post.',
+      },
+      app_updates: {
+        title: 'Aggiornamenti app',
+        subtitle: 'Ricevi novità, miglioramenti e suggerimenti.',
+      },
+      reminders: {
+        title: 'Promemoria glicemici',
+        subtitle: 'Modifica gli orari per colazione, pranzo, cena e snack.',
+      },
+    },
+    legal: {
+      title: 'Termini e Privacy',
+      subtitle: 'Rileggi i documenti di servizio accettati.',
+      terms: 'Termini di servizio',
+      privacy: 'Informativa sulla privacy',
+    },
+    support: {
+      title: 'Assistenza',
+      subtitle: 'Leggi le domande frequenti e contatta il supporto.',
+      faqLabel: 'FAQ',
+      faq: 'Leggi le domande frequenti',
+      contactLabel: 'Contatta supporto',
+    },
+    unavailableTitle: 'In arrivo',
+    unavailableMessage: 'Questo documento non è ancora disponibile.',
+    deletePrompt: 'Non vuoi più usare Foodity?',
+    deleteLink: 'Elimina account',
+    deleteTitle: 'Elimina account',
+    deleteMessage:
+      'Profilo, diario, post, bozze e ricette private verranno eliminati definitivamente. Le ricette pubbliche restano visibili senza il tuo nome. Non si può annullare.',
+    deleteConfirm: 'Elimina',
+    signOut: "Esci dall'account",
+    errors: {
+      title: 'Modifica non salvata',
+    },
+  },
+  account: {
+    title: 'Il tuo account',
+    nicknameTitle: 'Nickname',
+    saveNickname: 'Salva nickname',
+    nicknameSaved: 'Nickname aggiornato',
+    passwordTitle: 'Password',
+    passwordSubtitle: 'Inserisci la password attuale, poi scegli quella nuova.',
+    currentPasswordLabel: 'Password attuale',
+    newPasswordLabel: 'Nuova password',
+    savePassword: 'Cambia password',
+    passwordSaved: 'Password cambiata',
+    errors: {
+      title: 'Modifica non salvata',
+      nickname: 'Il nickname deve avere da 3 a 30 caratteri, senza spazi.',
+      nicknameTaken: 'Questo nickname è già usato: scegline un altro.',
+      currentPassword: 'Inserisci la password attuale.',
+      wrongPassword: 'La password attuale non è corretta.',
+    },
+  },
+  reminders: {
+    title: 'Promemoria glicemici',
+    subtitle: 'Scegli quando ricevere un promemoria per misurare la glicemia, per ogni pasto.',
+    enable: 'Attiva promemoria',
+    enableHint: 'Ricevi una notifica ogni giorno agli orari che scegli.',
+    mealTimes: 'Orari dei pasti',
+    mealTimesHint: 'Tocca un pasto per scegliere ore e minuti.',
+    editTime: 'Modifica orario',
+    noAlarm: 'Nessuna sveglia',
+    meals: {
+      breakfast: 'Colazione',
+      lunch: 'Pranzo',
+      dinner: 'Cena',
+      snack: 'Snack',
+    },
+    sheetTitle: 'Modifica orario',
+    repeat: 'Promemoria glicemico · Ogni giorno',
+    confirm: 'Conferma',
+  },
+  faq: {
+    title: 'FAQ',
+    empty: 'Ancora nessuna domanda.',
+  },
   textField: {
     showPassword: 'Mostra password',
     hidePassword: 'Nascondi password',
@@ -147,6 +248,7 @@ export const it: typeof en = {
     emailNotConfirmed: 'Conferma la tua email con il link che ti abbiamo inviato, poi riprova.',
     userExists: 'Esiste già un account con questa email.',
     weakPassword: 'La password è troppo debole: usa almeno %{min} caratteri.',
+    samePassword: 'La nuova password deve essere diversa da quella attuale.',
     rateLimit: 'Troppi tentativi. Riprova tra qualche minuto.',
     generic: 'Qualcosa è andato storto. Controlla la connessione e riprova.',
   },

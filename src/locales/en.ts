@@ -4,6 +4,7 @@ export const en = {
     ok: 'OK',
     back: 'Back',
     retry: 'Try again',
+    cancel: 'Cancel',
   },
   tabs: {
     home: 'Home',
@@ -65,7 +66,6 @@ export const en = {
     loadFailed: "We couldn't load your profile. Check your connection and try again.",
     title: 'My profile',
     settings: 'Settings',
-    settingsUnavailable: 'Settings are not available yet.',
     userTypes: {
       generic: 'General',
       diabetic: 'Diabetic',
@@ -91,6 +91,7 @@ export const en = {
   },
   profileSetup: {
     title: 'Complete your profile',
+    editTitle: 'Edit your profile',
     subtitle: 'A few details help us show you more useful information. You can change them at any time.',
     addPhoto: 'Add a profile photo',
     bioTitle: 'Profile description',
@@ -137,6 +138,106 @@ export const en = {
     note: 'Agree on the recommended range with your diabetes care team.',
     confirm: 'Confirm',
   },
+  settings: {
+    title: 'Settings',
+    subtitle: 'Manage your account, your information and your notification preferences.',
+    account: {
+      title: 'Your account',
+      subtitle: 'Change your credentials and the main details of your profile.',
+    },
+    profile: {
+      title: 'Profile',
+      subtitle:
+        'Update your photo, description, user type, communities and what you want other users to see.',
+    },
+    notifications: {
+      title: 'Notifications',
+      subtitle: 'Choose what to receive and when.',
+      recipe_feedback: {
+        title: 'Recipe reviews and reports',
+        subtitle: 'Get notified when someone reviews or reports your recipe.',
+      },
+      post_comments: {
+        title: 'Post comments',
+        subtitle: 'Get notified when someone comments on your posts.',
+      },
+      app_updates: {
+        title: 'App updates',
+        subtitle: 'Receive news, improvements and tips.',
+      },
+      reminders: {
+        title: 'Glucose reminders',
+        subtitle: 'Change the times for breakfast, lunch, dinner and snack.',
+      },
+    },
+    legal: {
+      title: 'Terms and Privacy',
+      subtitle: 'Read again the service documents you accepted.',
+      terms: 'Terms of Service',
+      privacy: 'Privacy Policy',
+    },
+    support: {
+      title: 'Support',
+      subtitle: 'Read the frequently asked questions and contact support.',
+      faqLabel: 'FAQ',
+      faq: 'Read the frequently asked questions',
+      contactLabel: 'Contact support',
+    },
+    unavailableTitle: 'Coming soon',
+    unavailableMessage: 'This document is not available yet.',
+    deletePrompt: "Don't want to use Foodity anymore?",
+    deleteLink: 'Delete account',
+    deleteTitle: 'Delete account',
+    deleteMessage:
+      'Your profile, diary, posts, drafts and private recipes will be deleted for good. Your public recipes stay visible without your name. This cannot be undone.',
+    deleteConfirm: 'Delete',
+    signOut: 'Sign out',
+    errors: {
+      title: 'Not saved',
+    },
+  },
+  account: {
+    title: 'Your account',
+    nicknameTitle: 'Nickname',
+    saveNickname: 'Save nickname',
+    nicknameSaved: 'Nickname updated',
+    passwordTitle: 'Password',
+    passwordSubtitle: 'Enter your current password, then choose a new one.',
+    currentPasswordLabel: 'Current password',
+    newPasswordLabel: 'New password',
+    savePassword: 'Change password',
+    passwordSaved: 'Password changed',
+    errors: {
+      title: 'Not saved',
+      nickname: 'The nickname must be 3 to 30 characters, without spaces.',
+      nicknameTaken: 'This nickname is already in use: choose another one.',
+      currentPassword: 'Enter your current password.',
+      wrongPassword: 'The current password is incorrect.',
+    },
+  },
+  reminders: {
+    title: 'Glucose reminders',
+    subtitle: 'Choose when to get a reminder to check your blood glucose, for each meal.',
+    enable: 'Turn on reminders',
+    enableHint: 'Get a notification every day at the times you choose.',
+    mealTimes: 'Meal times',
+    mealTimesHint: 'Tap a meal to choose hours and minutes.',
+    editTime: 'Change time',
+    noAlarm: 'No alarm',
+    meals: {
+      breakfast: 'Breakfast',
+      lunch: 'Lunch',
+      dinner: 'Dinner',
+      snack: 'Snack',
+    },
+    sheetTitle: 'Change time',
+    repeat: 'Glucose reminder · Every day',
+    confirm: 'Confirm',
+  },
+  faq: {
+    title: 'FAQ',
+    empty: 'No questions yet.',
+  },
   textField: {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
@@ -146,6 +247,7 @@ export const en = {
     emailNotConfirmed: 'Confirm your email with the link we sent you, then try again.',
     userExists: 'An account with this email already exists.',
     weakPassword: 'The password is too weak: use at least %{min} characters.',
+    samePassword: 'The new password must be different from the current one.',
     rateLimit: 'Too many attempts. Try again in a few minutes.',
     generic: 'Something went wrong. Check your connection and try again.',
   },

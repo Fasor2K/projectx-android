@@ -12,6 +12,8 @@ export function authErrorMessage(code: string | undefined) {
       return t('authErrors.userExists');
     case 'weak_password':
       return t('authErrors.weakPassword', { min: 8 });
+    case 'same_password':
+      return t('authErrors.samePassword');
     case 'over_request_rate_limit':
     case 'over_email_send_rate_limit':
       return t('authErrors.rateLimit');

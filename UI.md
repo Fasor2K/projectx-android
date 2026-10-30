@@ -17,7 +17,8 @@ Non replicare il glass a mano (blur, gradienti, `opacity`): non è Liquid Glass 
 ## Navigazione
 
 - Il layout radice [src/app/_layout.tsx](src/app/_layout.tsx) è uno `Stack` che legge la sessione di Supabase Auth e, da loggato, il profilo (`get-profile`, esposto con `useProfile()` di `@/lib/profile`). Con `Stack.Protected` mostra `login`/`register` a chi non è loggato, `profile-setup` a chi è loggato e il gruppo `(tabs)` solo a chi ha completato l'onboarding (`onboarding_completed_at`). Ogni `Stack.Protected` ha un `redirectTo` esplicito: senza, expo-router ripiega sul primo screen non protetto nel suo ordine (non quello del layout), ad esempio `auth-callback`, che rimanda a `/` e crea un loop. `auth-callback` riceve il link di conferma email (`foodity://auth-callback`).
-- `profile-setup/` ("Completa il tuo profilo" → "Range glicemico", solo per i diabetici) è sia l'onboarding sia la modifica del profilo dalle Impostazioni: il form è condiviso tra le due schermate (`@/lib/profile-form`), precompilato dal profilo e salvato tutto insieme alla fine con `save-profile`. Finito l'onboarding il layout reindirizza alla Home; aprendolo dalle Impostazioni, chi lo apre gestisce l'uscita dopo il salvataggio.
+- `profile-setup/` ("Completa il tuo profilo" → "Range glicemico", solo per i diabetici) è sia l'onboarding sia la modifica del profilo dalle Impostazioni: il form è condiviso tra le due schermate (`@/lib/profile-form`), precompilato dal profilo e salvato tutto insieme alla fine con `save-profile`. Finito l'onboarding il layout reindirizza alla Home. Aperto dalle Impostazioni è in modifica (`editing` nel contesto del form): titolo "Modifica il tuo profilo", pulsante indietro, e dopo il salvataggio torna alle Impostazioni.
+- `settings/` (Impostazioni, Il tuo account, Promemoria glicemici, FAQ) sta nello stesso `Stack.Protected` dei tab e si apre dall'ingranaggio del Profilo. Il layout tiene le notifiche (`get-notification-settings`) in un contesto condiviso; gli interruttori salvano a ogni tocco e tornano indietro se il salvataggio fallisce. "Modifica orario" è un `formSheet` (`reminder-time`) con il selettore orario di `@react-native-community/datetimepicker`: ruota inline su iOS, dialog di sistema su Android. La password si cambia con Supabase Auth dopo aver verificato quella attuale con un nuovo accesso.
 - I tab sono **native tabs** (`expo-router/native-tabs`, stabile da SDK 58), layout in [src/app/(tabs)/_layout.tsx](src/app/(tabs)/_layout.tsx).
 - Ogni tab è un file in `src/app/(tabs)/` più un `NativeTabs.Trigger` con lo stesso `name` nel layout: i trigger non si aggiungono da soli.
 - Icone: `sf` (SF Symbol, iOS) **e** `md` (Material Symbol, Android, via `expo-symbols`) su ogni trigger.
@@ -56,6 +57,7 @@ Regole d'uso:
   - `Button`: pulsante primario con icona e stato `loading`.
   - `BackButton`: "indietro" flottante in `GlassSurface`, per le schermate senza header.
   - `SectionHeader`: intestazione delle `Card` (icona, titolo, sottotitolo).
+  - `SwitchRow`: titolo, descrizione e `Switch` di sistema.
   - `ChoiceButton`: opzione di una scelta singola o multipla; per le scelte con voce esclusiva ("Generico", "Nessuna") usa `toggleChoice` di `@/lib/profile-form`.
   - `Icon`: `sf` (iOS) **e** `md` (Android) come per i tab.
 
@@ -68,6 +70,7 @@ Regole d'uso:
 ## Stato attuale
 
 - `userInterfaceStyle` in `app.json` è `light`: l'app non segue ancora il tema scuro. Se si attiva il dark mode, aggiornare anche il `ThemeProvider` (`DarkTheme`) e il colore del fallback.
-- Tab: `index` (Home, segnaposto) e `profile` (Profilo). Nel Profilo i contatori vengono da `get-profile-stats`, ricaricati a ogni focus; "Le mie ricette", "Ricette salvate" e "Post" mostrano solo l'empty state, e l'ingranaggio delle Impostazioni apre un avviso finché la schermata non esiste. Mancano ancora i tab Cerca e Diario e il pulsante "+".
-- La registrazione non controlla che il nickname sia libero: se è già preso, `save-profile` risponde `nickname_taken` alla fine dell'onboarding e l'app non offre ancora un modo per cambiarlo.
-- Accesso solo con email: il login col nickname richiede un endpoint che traduca nickname → email. "Password dimenticata?" e i link a Termini/Privacy non sono ancora collegati.
+- Tab: `index` (Home, segnaposto) e `profile` (Profilo). Nel Profilo i contatori vengono da `get-profile-stats`, ricaricati a ogni focus; "Le mie ricette", "Ricette salvate" e "Post" mostrano solo l'empty state, e l'ingranaggio apre le Impostazioni. Mancano ancora i tab Cerca e Diario e il pulsante "+".
+- La registrazione non controlla che il nickname sia libero: se è già preso, `save-profile` risponde `nickname_taken` alla fine dell'onboarding, e il nickname si può cambiare solo dalle Impostazioni, che però si raggiungono dopo l'onboarding.
+- Le preferenze di notifica e i promemoria glicemici si salvano, ma l'invio delle notifiche non esiste ancora. Termini, Privacy e FAQ sono segnaposto.
+- Accesso solo con email: il login col nickname richiede un endpoint che traduca nickname → email. "Password dimenticata?" non è ancora collegato.

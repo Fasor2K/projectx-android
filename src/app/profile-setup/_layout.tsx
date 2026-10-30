@@ -17,7 +17,8 @@ export default function ProfileSetupLayout() {
   if (onboarding && profile?.onboarding_completed_at) return <Redirect href="/" />;
 
   return (
-    <ProfileFormContext.Provider value={{ form, update: (patch) => setForm((f) => ({ ...f, ...patch })) }}>
+    <ProfileFormContext.Provider
+      value={{ form, update: (patch) => setForm((f) => ({ ...f, ...patch })), editing: !onboarding }}>
       <Stack screenOptions={{ headerShown: false }} />
     </ProfileFormContext.Provider>
   );

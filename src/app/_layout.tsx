@@ -66,6 +66,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={!!profile?.onboarding_completed_at} redirectTo={session ? '/profile-setup' : '/login'}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="settings" />
           </Stack.Protected>
           {/* Also reachable later from Settings, to edit the profile. */}
           <Stack.Protected guard={!!session} redirectTo="/login">

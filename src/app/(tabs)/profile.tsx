@@ -1,6 +1,6 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
@@ -44,7 +44,7 @@ export default function Profile() {
           {t('profile.title')}
         </Text>
         <Pressable
-          onPress={() => Alert.alert(t('profile.settings'), t('profile.settingsUnavailable'))}
+          onPress={() => router.push('/settings')}
           accessibilityRole="button"
           accessibilityLabel={t('profile.settings')}
           hitSlop={spacing.sm}

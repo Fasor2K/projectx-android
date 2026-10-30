@@ -27,7 +27,8 @@
       "expo-router",
       "expo-sqlite",
       ["expo-localization", { "supportedLocales": ["en", "it"] }],
-      ["expo-image-picker", { "cameraPermission": false, "microphonePermission": false }]
+      ["expo-image-picker", { "cameraPermission": false, "microphonePermission": false }],
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "foodity",
     "experiments": {

@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { createContext, useContext, useState } from 'react';
 import { Alert } from 'react-native';
 
@@ -61,7 +62,9 @@ export function toInput(form: ProfileForm): ProfileInput {
 export const ProfileFormContext = createContext<{
   form: ProfileForm;
   update: (patch: Partial<ProfileForm>) => void;
-}>({ form: initialForm(null), update: () => {} });
+  /** true = aperto dalle Impostazioni ("Modifica il tuo profilo"), false = onboarding. */
+  editing: boolean;
+}>({ form: initialForm(null), update: () => {}, editing: false });
 
 export const useProfileForm = () => useContext(ProfileFormContext);
 
@@ -72,9 +75,9 @@ const saveErrors: Record<string, string> = {
   avatar_too_large: 'profileSetup.errors.avatarTooLarge',
 };
 
-/** Salva il form con save-profile e aggiorna il profilo del layout radice. */
+/** Salva il form con save-profile e aggiorna il profilo del layout radice; in modifica torna alle Impostazioni. */
 export function useSaveProfile() {
-  const { form } = useProfileForm();
+  const { form, editing } = useProfileForm();
   const { setProfile } = useProfile();
   const [saving, setSaving] = useState(false);
 
@@ -82,6 +85,7 @@ export function useSaveProfile() {
     setSaving(true);
     try {
       setProfile(await saveProfile(toInput(form)));
+      if (editing) router.dismissTo('/settings');
     } catch (e) {
       const code = e instanceof ApiError ? e.code : undefined;
       Alert.alert(t('profileSetup.errors.title'), t((code && saveErrors[code]) || 'authErrors.generic'));

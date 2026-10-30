@@ -3,6 +3,7 @@ import { launchImageLibraryAsync } from 'expo-image-picker';
 import { router } from 'expo-router';
 import { Alert, Image, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { ChoiceButton } from '@/components/choice-button';
@@ -32,7 +33,7 @@ const communities = [
 
 export default function CompleteProfile() {
   const { profile } = useProfile();
-  const { form, update } = useProfileForm();
+  const { form, update, editing } = useProfileForm();
   const { save, saving } = useSaveProfile();
   const avatarUri = form.avatar?.uri ?? profile?.avatar_url;
   const isDiabetic = form.userTypes.includes('diabetic');
@@ -55,9 +56,10 @@ export default function CompleteProfile() {
 
   return (
     <Screen contentContainerStyle={styles.content}>
+      {editing && <BackButton />}
       <View style={styles.header}>
         <Text style={typography.display} accessibilityRole="header">
-          {t('profileSetup.title')}
+          {t(editing ? 'profileSetup.editTitle' : 'profileSetup.title')}
         </Text>
         <Text style={typography.body}>{t('profileSetup.subtitle')}</Text>
       </View>

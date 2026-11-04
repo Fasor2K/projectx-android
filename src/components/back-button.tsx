@@ -6,12 +6,12 @@ import { Icon } from '@/components/icon';
 import { t } from '@/lib/i18n';
 import { colors, radius, spacing } from '@/theme';
 
-/** Pulsante "indietro" flottante in vetro, per le schermate senza header. */
-export function BackButton() {
+/** Pulsante "indietro" flottante in vetro, per le schermate senza header; `close` per modali e sheet (X). */
+export function BackButton({ close = false }: { close?: boolean }) {
   return (
-    <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t('common.back')} hitSlop={spacing.sm}>
+    <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t(close ? 'common.close' : 'common.back')} hitSlop={spacing.sm}>
       <GlassSurface interactive style={styles.back}>
-        <Icon sf="chevron.left" md="arrow_back" tintColor={colors.text} />
+        <Icon sf={close ? 'xmark' : 'chevron.left'} md={close ? 'close' : 'arrow_back'} tintColor={colors.text} />
       </GlassSurface>
     </Pressable>
   );

@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/button';
 import { t } from '@/lib/i18n';
 import { fetchProfile, ProfileContext, type Profile } from '@/lib/profile';
+import { SearchFiltersContext } from '@/lib/search';
 import { supabase } from '@/lib/supabase';
 import { backgroundGradient, colors, spacing, typography } from '@/theme';
 
@@ -15,6 +16,7 @@ export default function RootLayout() {
   // Profile of the logged-in user: undefined = not loaded yet, null = registration to complete (no row in users).
   const [loaded, setLoaded] = useState<{ userId: string; profile: Profile | null }>();
   const [failedFor, setFailedFor] = useState<string>();
+  const [searchTags, setSearchTags] = useState<string[]>([]);
   const userId = session?.user.id;
   const profile = userId && loaded?.userId === userId ? loaded.profile : undefined;
 
@@ -62,23 +64,34 @@ export default function RootLayout() {
   // expo-router's own order (not this one), e.g. auth-callback, which redirects back to "/" and loops.
   return (
     <ProfileContext.Provider value={{ profile, setProfile: (next) => setLoaded({ userId: userId!, profile: next }) }}>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Protected guard={!!profile?.onboarding_completed_at} redirectTo={session ? '/profile-setup' : '/login'}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="settings" />
-          </Stack.Protected>
-          {/* Also reachable later from Settings, to edit the profile. */}
-          <Stack.Protected guard={!!session} redirectTo="/login">
-            <Stack.Screen name="profile-setup" />
-          </Stack.Protected>
-          <Stack.Protected guard={!session} redirectTo="/">
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-          </Stack.Protected>
-          <Stack.Screen name="auth-callback" />
-        </Stack>
-      </ThemeProvider>
+      <SearchFiltersContext.Provider value={{ tags: searchTags, setTags: setSearchTags }}>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Protected guard={!!profile?.onboarding_completed_at} redirectTo={session ? '/profile-setup' : '/login'}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="settings" />
+              <Stack.Screen
+                name="search-filters"
+                options={{ presentation: 'formSheet', sheetAllowedDetents: [0.9], sheetGrabberVisible: true }}
+              />
+              <Stack.Screen name="scanner" options={{ presentation: 'fullScreenModal' }} />
+              <Stack.Screen
+                name="scanned-product"
+                options={{ presentation: 'formSheet', sheetAllowedDetents: [0.6], sheetGrabberVisible: true }}
+              />
+            </Stack.Protected>
+            {/* Also reachable later from Settings, to edit the profile. */}
+            <Stack.Protected guard={!!session} redirectTo="/login">
+              <Stack.Screen name="profile-setup" />
+            </Stack.Protected>
+            <Stack.Protected guard={!session} redirectTo="/">
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+            </Stack.Protected>
+            <Stack.Screen name="auth-callback" />
+          </Stack>
+        </ThemeProvider>
+      </SearchFiltersContext.Provider>
     </ProfileContext.Provider>
   );
 }

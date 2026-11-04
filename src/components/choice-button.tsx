@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 
 import { colors, radius, spacing } from '@/theme';
 
@@ -6,16 +6,17 @@ type Props = {
   label: string;
   selected: boolean;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
 /** Opzione di una scelta (singola o multipla): piena quando selezionata. */
-export function ChoiceButton({ label, selected, onPress }: Props) {
+export function ChoiceButton({ label, selected, onPress, style }: Props) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: selected }}
-      style={({ pressed }) => [styles.button, selected && styles.selected, pressed && styles.pressed]}>
+      style={({ pressed }) => [styles.button, selected && styles.selected, pressed && styles.pressed, style]}>
       <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
     </Pressable>
   );

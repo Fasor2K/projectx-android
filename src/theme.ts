@@ -18,9 +18,19 @@ export const colors = {
   glassFallbackBorder: 'rgba(60, 60, 67, 0.18)',
   success: '#2E9E6B',
   danger: '#D93B3B',
+  rating: '#E8912D',
   // Sfondo a gradiente delle schermate (dall'alto verso il basso).
   backgroundTop: '#F1F4FB',
   backgroundBottom: '#C4D3F1',
+} as const;
+
+/** Etichette dei valori nutrizionali nei risultati di ricerca. */
+export const macroColors = {
+  carbs: { background: '#E7F6EC', text: '#1F8557' },
+  fat: { background: '#FDF1E3', text: '#B9690F' },
+  protein: { background: '#E6EEFB', text: '#1B6FE3' },
+  fiber: { background: '#F8ECE6', text: '#9A4E28' },
+  kcal: { background: '#EEEFF2', text: '#5B6B82' },
 } as const;
 
 export const backgroundGradient = `linear-gradient(180deg, ${colors.backgroundTop} 0%, ${colors.backgroundBottom} 100%)`;

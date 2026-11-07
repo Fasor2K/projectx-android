@@ -75,6 +75,21 @@ export default function RootLayout() {
                 options={{ presentation: 'formSheet', sheetAllowedDetents: [0.9], sheetGrabberVisible: true }}
               />
               <Stack.Screen name="scanner" options={{ presentation: 'fullScreenModal' }} />
+              <Stack.Screen name="calendar" />
+              <Stack.Screen name="diary-chart" />
+              <Stack.Screen name="meal" />
+              <Stack.Screen
+                name="meal-item"
+                options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
+              />
+              <Stack.Screen
+                name="glucose-insulin"
+                options={{ presentation: 'formSheet', sheetAllowedDetents: [0.75], sheetGrabberVisible: true }}
+              />
+              <Stack.Screen
+                name="diary-export"
+                options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
+              />
               <Stack.Screen
                 name="scanned-product"
                 options={{ presentation: 'formSheet', sheetAllowedDetents: [0.6], sheetGrabberVisible: true }}

@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n';
 import type { Product, Recipe } from '@/lib/search';
 import { colors, macroColors, radius, spacing, typography } from '@/theme';
 
-type Nutrition = { carbs: number; fat: number; protein: number; fiber: number; kcal: number };
+export type Nutrition = { carbs: number; fat: number; protein: number; fiber: number; kcal: number };
 
 type Props = {
   title: string;
@@ -52,19 +52,26 @@ function FoodCard({ title, imageUrl, rating, details, nutrition, nutritionNote }
           </Text>
         )}
         {nutrition ? (
-          <View style={styles.macros}>
-            <Macro kind="carbs" value={nutrition.carbs} />
-            <Macro kind="fat" value={nutrition.fat} />
-            <Macro kind="protein" value={nutrition.protein} />
-            <Macro kind="fiber" value={nutrition.fiber} />
-            <Macro kind="kcal" value={nutrition.kcal} />
-          </View>
+          <Macros nutrition={nutrition} />
         ) : (
           <Text style={typography.caption}>{t('food.noNutrition')}</Text>
         )}
       </View>
       <Icon sf="chevron.right" md="chevron_right" size={16} tintColor={colors.textMuted} />
     </Card>
+  );
+}
+
+/** Etichette colorate dei valori nutrizionali (risultati di ricerca, voci del diario). */
+export function Macros({ nutrition }: { nutrition: Nutrition }) {
+  return (
+    <View style={styles.macros}>
+      <Macro kind="carbs" value={nutrition.carbs} />
+      <Macro kind="fat" value={nutrition.fat} />
+      <Macro kind="protein" value={nutrition.protein} />
+      <Macro kind="fiber" value={nutrition.fiber} />
+      <Macro kind="kcal" value={nutrition.kcal} />
+    </View>
   );
 }
 

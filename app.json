@@ -26,10 +26,32 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      ["expo-localization", { "supportedLocales": ["en", "it"] }],
-      ["expo-image-picker", { "cameraPermission": "Foodity uses the camera to read product barcodes.", "microphonePermission": false }],
+      [
+        "expo-localization",
+        {
+          "supportedLocales": [
+            "en",
+            "it"
+          ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Foodity uses the camera to read product barcodes.",
+          "microphonePermission": false
+        }
+      ],
       "@react-native-community/datetimepicker",
-      ["expo-camera", { "cameraPermission": "Foodity uses the camera to read product barcodes.", "microphonePermission": false, "recordAudioAndroid": false }]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Foodity uses the camera to read product barcodes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      "expo-sharing"
     ],
     "scheme": "foodity",
     "experiments": {

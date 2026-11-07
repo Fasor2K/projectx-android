@@ -4,6 +4,10 @@ L'app è **una sola codebase React Native (Expo) per Android e iOS**, nonostante
 
 Le API Expo cambiano a ogni SDK: prima di toccare uno dei componenti sotto, leggi le docs della versione in `package.json` (vedi AGENTS.md).
 
+## Implementare dal design
+
+Il design delle schermate è il canvas Claude Design "ProjectX – App senza suggerimento insulina" (https://claude.ai/artifact/2YEon9fcwUMhZTeEBRGK9n): le pagine "Prototipo · Diabetico / Generico / Celiaco" collegano le schermate e mostrano i flussi. Quando un elemento del design è diverso da un componente già implementato nell'app (stile di card, segmenti, pulsanti, campi, header), **vince il componente già implementato**: si riusa quello, e il design vale per contenuti, flussi e disposizione. Le parti del design che dipendono da schermate non ancora implementate si collegano a ciò che c'è e si annotano in "Stato attuale".
+
 ## Regola base: prima il componente di sistema
 
 Per ogni elemento di UI scegli la prima opzione che funziona:
@@ -20,6 +24,7 @@ Non replicare il glass a mano (blur, gradienti, `opacity`): non è Liquid Glass 
 - `profile-setup/` ("Completa il tuo profilo" → "Range glicemico", solo per i diabetici) è sia l'onboarding sia la modifica del profilo dalle Impostazioni: il form è condiviso tra le due schermate (`@/lib/profile-form`), precompilato dal profilo e salvato tutto insieme alla fine con `save-profile`. Finito l'onboarding il layout reindirizza alla Home. Aperto dalle Impostazioni è in modifica (`editing` nel contesto del form): titolo "Modifica il tuo profilo", pulsante indietro, e dopo il salvataggio torna alle Impostazioni.
 - `settings/` (Impostazioni, Il tuo account, Promemoria glicemici, FAQ) sta nello stesso `Stack.Protected` dei tab e si apre dall'ingranaggio del Profilo. Il layout tiene le notifiche (`get-notification-settings`) in un contesto condiviso; gli interruttori salvano a ogni tocco e tornano indietro se il salvataggio fallisce. "Modifica orario" è un `formSheet` (`reminder-time`) con il selettore orario di `@react-native-community/datetimepicker`: ruota inline su iOS, dialog di sistema su Android; l'interruttore senza etichetta a destra del nome del pasto attiva la notifica (acceso di default) e mostra il selettore solo se è acceso. "Il tuo account" mostra l'email della sessione in sola lettura: non si cambia. La password si cambia con Supabase Auth dopo aver verificato quella attuale con un nuovo accesso.
 - Cerca (`(tabs)/search`) ha due tab interni nella stessa pagina. **Ricette** (`search-recipes`): testo, filtri e chip Mie ricette, Frequenti, Recenti, Popolari. **Prodotti** (`search-products`): testo, scansione e chip Recenti, Frequenti, senza filtri. Lo sheet `search-filters` è un `formSheet` che tiene i filtri in `SearchFiltersContext` (layout radice). `scanner` è un `fullScreenModal` con `CameraView`; un codice letto apre il `formSheet` `scanned-product` (`get-product-by-barcode`), e alla sua chiusura la scansione riprende.
+- Diario (`(tabs)/diary`): settimana corrente, riepilogo e timeline del giorno scelto (`DayView`, `get-diary`, ricaricato a ogni focus); per i diabetici il riepilogo è a schede (giornata e nutrizionale) e il tocco apre `diary-chart` (torta e grafico glicemia con il range del profilo). In alto: Componi pasto (`meal`, giorno e pasto nei parametri), `calendar` (giorno qualsiasi; il "+" dei diabetici apre il `formSheet` `glucose-insulin`) ed `diary-export` (`formSheet`: periodo e formato, file generato nell'app con `@/lib/diary-export` e condiviso col foglio di sistema). `meal-item` è il `formSheet` "Aggiungi a pasto" (da Cerca e dallo scanner, aggiunge al pasto di oggi e apre Componi pasto) e di modifica di una voce (con "Rimuovi"); i valori in anteprima vengono da `get-food-nutrition`.
 - I tab sono **native tabs** (`expo-router/native-tabs`, stabile da SDK 58), layout in [src/app/(tabs)/_layout.tsx](src/app/(tabs)/_layout.tsx).
 - Ogni tab è un file in `src/app/(tabs)/` più un `NativeTabs.Trigger` con lo stesso `name` nel layout: i trigger non si aggiungono da soli.
 - Icone: `sf` (SF Symbol, iOS) **e** `md` (Material Symbol, Android, via `expo-symbols`) su ogni trigger.
@@ -62,6 +67,9 @@ Regole d'uso:
   - `ChoiceButton`: opzione di una scelta singola o multipla; per le scelte con voce esclusiva ("Generico", "Nessuna") usa `toggleChoice` di `@/lib/profile-form`.
   - `ProductCard`, `RecipeCard` (`food-card.tsx`): riga di un risultato di ricerca; valori sempre per 100 g, e la ricetta con ingrediente guida lo indica ("per 100 g di Ceci").
   - `Icon`: `sf` (iOS) **e** `md` (Android) come per i tab.
+  - `SegmentedControl`: scelta a pillola tra poche opzioni (sezioni del Profilo, pasti, unità, formati). `Macros` (`food-card.tsx`): etichette colorate dei valori nutrizionali.
+  - `DateTimeField`: etichetta e data o orario; selettore compatto su iOS, dialog di sistema su Android.
+  - Diario: `DiaryEntryRow`/`Row`/`Thumbnail` (`diary-entry.tsx`, righe della timeline e delle voci di un pasto), `NutritionSummary`, `DaySummary`, `GlucoseChart` (`diary-summary.tsx`, disegnati con `react-native-svg`), `DayView`, `GlucoseInsulinFields`.
 
 ## Verifica di una modifica UI
 
@@ -72,7 +80,8 @@ Regole d'uso:
 ## Stato attuale
 
 - `userInterfaceStyle` in `app.json` è `light`: l'app non segue ancora il tema scuro. Se si attiva il dark mode, aggiornare anche il `ThemeProvider` (`DarkTheme`) e il colore del fallback.
-- Tab: `index` (Home, segnaposto), `search` (Cerca) e `profile` (Profilo). Nel Profilo i contatori vengono da `get-profile-stats`, ricaricati a ogni focus; "Le mie ricette", "Ricette salvate" e "Post" mostrano solo l'empty state, e l'ingranaggio apre le Impostazioni. Mancano ancora il tab Diario e il pulsante "+". In Cerca le righe dei risultati non si aprono (il dettaglio prodotto/ricetta non esiste ancora), e tutti i chip tranne "Popolari" danno 0 risultati finché non ci sono ricette e diario.
+- Tab: `index` (Home, segnaposto), `search` (Cerca), `diary` (Diario) e `profile` (Profilo). Nel Profilo i contatori vengono da `get-profile-stats`, ricaricati a ogni focus; "Le mie ricette", "Ricette salvate" e "Post" mostrano solo l'empty state, e l'ingranaggio apre le Impostazioni. Manca ancora il pulsante "+" (Nuova ricetta, Nuovo post). In Cerca una riga dei risultati apre "Aggiungi a pasto", perché il dettaglio prodotto/ricetta non esiste ancora; tutti i chip tranne "Popolari" danno 0 risultati.
+- Diario: le attività si mostrano se ci sono, ma l'import da Apple Health e Google Fit non esiste ancora. Le voci della timeline non aprono il dettaglio ricetta (non esiste). Il riepilogo non mostra zuccheri e saturi del design ("3g zuccheri"): `meal_items` non li ha.
 - La registrazione non controlla che il nickname sia libero: se è già preso, `save-profile` risponde `nickname_taken` alla fine dell'onboarding, e il nickname si può cambiare solo dalle Impostazioni, che però si raggiungono dopo l'onboarding.
 - Le preferenze di notifica e i promemoria glicemici si salvano, ma l'invio delle notifiche non esiste ancora. Termini, Privacy e FAQ sono segnaposto.
 - "Password dimenticata?" non è ancora collegato.

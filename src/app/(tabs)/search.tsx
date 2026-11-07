@@ -146,11 +146,24 @@ export default function Search() {
 
       <Text style={styles.sectionTitle}>{t(q ? 'search.results' : 'search.suggested')}</Text>
 
+      {/* shortcut: senza dettaglio ricetta/prodotto il tocco apre "Aggiungi a pasto"; da collegare al dettaglio quando esiste. */}
       {shownRecipes.map((recipe) => (
-        <RecipeCard key={recipe.id} recipe={recipe} />
+        <Pressable
+          key={recipe.id}
+          onPress={() => router.push({ pathname: '/meal-item', params: { recipe_id: recipe.id } })}
+          accessibilityRole="button"
+          accessibilityHint={t('diary.item.addTitle')}>
+          <RecipeCard recipe={recipe} />
+        </Pressable>
       ))}
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <Pressable
+          key={product.id}
+          onPress={() => router.push({ pathname: '/meal-item', params: { product_id: product.id } })}
+          accessibilityRole="button"
+          accessibilityHint={t('diary.item.addTitle')}>
+          <ProductCard product={product} />
+        </Pressable>
       ))}
 
       {loading && <ActivityIndicator color={colors.primary} />}

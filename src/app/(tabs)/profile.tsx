@@ -6,6 +6,7 @@ import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
 import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
+import { SegmentedControl } from '@/components/segmented-control';
 import { i18n, t } from '@/lib/i18n';
 import { fetchProfileStats, useProfile, type ProfileStats } from '@/lib/profile';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -93,23 +94,12 @@ export default function Profile() {
         <Stat value={stats && compact.format(stats.followers_count)} label={t('profile.stats.followers')} />
       </Card>
 
-      <View style={styles.segments} accessibilityRole="tablist">
-        {sections.map((value) => {
-          const selected = value === section;
-          return (
-            <Pressable
-              key={value}
-              onPress={() => setSection(value)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected }}
-              style={[styles.segment, selected && styles.segmentSelected]}>
-              <Text style={[styles.segmentText, selected && styles.segmentTextSelected]} numberOfLines={1}>
-                {t(`profile.sections.${value}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <SegmentedControl
+        options={sections}
+        value={section}
+        onChange={setSection}
+        label={(value) => t(`profile.sections.${value}`)}
+      />
 
       <View style={styles.empty}>
         <Text style={typography.title}>{t(`profile.empty.${section}`)}</Text>
@@ -196,29 +186,6 @@ const styles = StyleSheet.create({
   statLabel: {
     ...typography.caption,
     letterSpacing: 0.5,
-  },
-  segments: {
-    flexDirection: 'row',
-    padding: spacing.xs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.border,
-  },
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: radius.pill,
-  },
-  segmentSelected: {
-    backgroundColor: colors.surface,
-  },
-  segmentText: {
-    ...typography.label,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  segmentTextSelected: {
-    fontWeight: '700',
   },
   empty: {
     flex: 1,

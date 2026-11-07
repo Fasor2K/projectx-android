@@ -1,8 +1,9 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { BackButton } from '@/components/back-button';
+import { Button } from '@/components/button';
 import { ProductCard } from '@/components/food-card';
 import { t } from '@/lib/i18n';
 import { ApiError } from '@/lib/profile';
@@ -40,7 +41,15 @@ export default function ScannedProduct() {
           {t('scanner.product')}
         </Text>
       </View>
-      {product && <ProductCard product={product} />}
+      {product && (
+        <>
+          <ProductCard product={product} />
+          <Button
+            title={t('diary.item.addTitle')}
+            onPress={() => router.push({ pathname: '/meal-item', params: { product_id: product.id } })}
+          />
+        </>
+      )}
       {error && <Text style={styles.error}>{error}</Text>}
       {!product && !error && <ActivityIndicator color={colors.primary} />}
     </View>

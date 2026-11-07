@@ -22,7 +22,7 @@ Where things go:
 
 Keep the files concise: edit or replace the existing rule instead of adding a duplicate or contradictory one, and remove what is no longer true. Don't document what the code already tells. If it's unclear which file a rule belongs in, pick the one closest to its scope and say so in the summary.
 
-Project skills in `.claude/skills/`: `commit` and `commit-and-push` commit (and push) this repo's changes; `projectx-be` has skills with the same names for its repo, plus `supabase-endpoint`.
+Project skills in `.claude/skills/`: `commit` and `commit-and-push` commit (and push) this repo's changes; `projectx-be` has skills with the same names for its repo, plus `supabase-endpoint` and `implement-design-section` (implement a section from the Claude Design prototypes, backend and app; use it whenever the user asks to build a section, screen or flow from the design). When the design differs from a component already implemented in the app, the existing component wins (see `UI.md`, "Implementare dal design").
 
 ## UI guidelines
 

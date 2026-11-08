@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { GlassSurface } from '@/components/glass-surface';
 import { Icon } from '@/components/icon';
@@ -9,12 +9,21 @@ import { colors, radius, spacing } from '@/theme';
 /** Pulsante "indietro" flottante in vetro, per le schermate senza header; `close` per modali e sheet (X). */
 export function BackButton({ close = false }: { close?: boolean }) {
   return (
-    <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t(close ? 'common.close' : 'common.back')} hitSlop={spacing.sm}>
+    <Pressable
+      onPress={() => router.back()}
+      accessibilityRole="button"
+      accessibilityLabel={t(close ? 'common.close' : 'common.back')}
+      hitSlop={spacing.sm}>
       <GlassSurface interactive style={styles.back}>
         <Icon sf={close ? 'xmark' : 'chevron.left'} md={close ? 'close' : 'arrow_back'} tintColor={colors.text} />
       </GlassSurface>
     </Pressable>
   );
+}
+
+/** Spazio del pulsante indietro fisso di `Screen`, per non far scorrere il contenuto sotto di lui all'apertura. */
+export function BackButtonSpace() {
+  return <View style={styles.back} />;
 }
 
 const styles = StyleSheet.create({

@@ -16,12 +16,24 @@ export const colors = {
   // Superficie di GlassSurface dove il Liquid Glass non c'è (Android, iOS < 26, Riduci trasparenza).
   glassFallback: '#F2F2F7',
   glassFallbackBorder: 'rgba(60, 60, 67, 0.18)',
+  // Sfondo dei formSheet: il vetro di sistema da solo è troppo scuro e trasparente; grigio chiaro perché le card bianche si vedano.
+  sheetBackground: 'rgba(242, 242, 247, 0.96)',
   success: '#2E9E6B',
   danger: '#D93B3B',
   rating: '#E8912D',
   // Sfondo a gradiente delle schermate (dall'alto verso il basso).
   backgroundTop: '#F1F4FB',
   backgroundBottom: '#C4D3F1',
+} as const;
+
+/** Sheet Commenti / Recensioni: colori presi dal design (richiesto di seguirlo alla lettera). */
+export const reviewColors = {
+  title: '#1A1A1A',
+  author: '#6E6E73',
+  time: '#9CA3AF',
+  text: '#1C1C1E',
+  star: '#FF9500',
+  send: '#0088FF',
 } as const;
 
 /** Etichette dei valori nutrizionali nei risultati di ricerca. */

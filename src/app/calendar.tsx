@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Card } from '@/components/card';
 import { DateTimeField } from '@/components/date-time-field';
 import { DayView } from '@/components/day-view';
@@ -23,9 +23,9 @@ export default function Calendar() {
   const date = fromDay(day);
 
   return (
-    <Screen contentContainerStyle={styles.content}>
+    <Screen back contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <BackButton />
+        <BackButtonSpace />
         <Text style={styles.title} accessibilityRole="header">
           {t('diary.calendar')}
         </Text>

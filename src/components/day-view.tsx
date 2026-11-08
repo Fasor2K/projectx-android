@@ -81,9 +81,22 @@ export function DayView({ day }: { day: string }) {
         <NutritionSummary nutrition={summary} />
       )}
 
-      {entries.map((entry) => (
-        <DiaryEntryRow key={`${entry.kind}-${entry.id}`} entry={entry} />
-      ))}
+      {entries.map((entry) => {
+        const row = <DiaryEntryRow key={`${entry.kind}-${entry.id}`} entry={entry} />;
+        // Un cibo apre il dettaglio della ricetta o del prodotto, se esiste ancora.
+        const target = entry.recipe_id
+          ? ({ pathname: '/recipe', params: { id: entry.recipe_id } } as const)
+          : entry.product_id
+            ? ({ pathname: '/product', params: { id: entry.product_id } } as const)
+            : null;
+        return target ? (
+          <Pressable key={`${entry.kind}-${entry.id}`} onPress={() => router.push(target)} accessibilityRole="button">
+            {row}
+          </Pressable>
+        ) : (
+          row
+        );
+      })}
       {entries.length === 0 && <Text style={styles.message}>{t('diary.empty')}</Text>}
     </View>
   );

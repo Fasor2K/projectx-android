@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/button';
@@ -43,7 +43,15 @@ export default function ScannedProduct() {
       </View>
       {product && (
         <>
-          <ProductCard product={product} />
+          {/* Il dettaglio è una schermata dello stack: chiude scanner e sheet prima di aprirlo. */}
+          <Pressable
+            onPress={() => {
+              router.dismissAll();
+              router.push({ pathname: '/product', params: { id: product.id } });
+            }}
+            accessibilityRole="button">
+            <ProductCard product={product} />
+          </Pressable>
           <Button
             title={t('diary.item.addTitle')}
             onPress={() => router.push({ pathname: '/meal-item', params: { product_id: product.id } })}

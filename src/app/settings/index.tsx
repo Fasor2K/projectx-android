@@ -2,7 +2,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState, type ComponentProps } from 'react';
 import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
@@ -72,8 +72,8 @@ export default function Settings() {
   const unavailable = () => Alert.alert(t('settings.unavailableTitle'), t('settings.unavailableMessage'));
 
   return (
-    <Screen contentContainerStyle={styles.content}>
-      <BackButton />
+    <Screen back contentContainerStyle={styles.content}>
+      <BackButtonSpace />
       <View style={styles.header}>
         <Text style={typography.display} accessibilityRole="header">
           {t('settings.title')}

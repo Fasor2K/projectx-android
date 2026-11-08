@@ -3,7 +3,7 @@ import { launchImageLibraryAsync } from 'expo-image-picker';
 import { router } from 'expo-router';
 import { Alert, Image, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { ChoiceButton } from '@/components/choice-button';
@@ -55,8 +55,8 @@ export default function CompleteProfile() {
   }
 
   return (
-    <Screen contentContainerStyle={styles.content}>
-      {editing && <BackButton />}
+    <Screen back={editing} contentContainerStyle={styles.content}>
+      {editing && <BackButtonSpace />}
       <View style={styles.header}>
         <Text style={typography.display} accessibilityRole="header">
           {t(editing ? 'profileSetup.editTitle' : 'profileSetup.title')}

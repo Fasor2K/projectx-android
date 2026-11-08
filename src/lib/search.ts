@@ -41,21 +41,27 @@ export const tagSections = {
   dish_type: ['one-dish', 'appetizer', 'first-course', 'second-course', 'side-dish', 'baked-goods', 'savory', 'sweet'],
 } as const;
 
-export type QuickFilter = 'mine' | 'frequent' | 'recent' | 'popular';
+export type QuickFilter = 'mine' | 'frequent' | 'popular';
 
 export type SearchTab = 'recipes' | 'products';
 
 export const quickFilters: Record<SearchTab, QuickFilter[]> = {
-  recipes: ['mine', 'frequent', 'recent', 'popular'],
-  products: ['recent', 'frequent'],
+  recipes: ['mine', 'frequent', 'popular'],
+  products: ['frequent'],
 };
 
-export const searchProducts = async (q?: string) =>
-  (await invoke<{ products: Product[] }>(`search-products?${new URLSearchParams(q ? { q } : {})}`, { method: 'GET' }))
-    .products;
+/** `recent`: senza testo, gli alimenti usati di recente nei pasti invece dei suggeriti. */
+export const searchProducts = async (q?: string, recent = false) => {
+  const params = new URLSearchParams({ ...(q && { q }), ...(recent && { recent: 'true' }) });
+  return (await invoke<{ products: Product[] }>(`search-products?${params}`, { method: 'GET' })).products;
+};
 
-export const searchRecipes = async (q: string | undefined, tags: string[]) => {
-  const params = new URLSearchParams({ ...(q && { q }), ...(tags.length && { tags: tags.join(',') }) });
+export const searchRecipes = async (q: string | undefined, tags: string[], recent = false) => {
+  const params = new URLSearchParams({
+    ...(q && { q }),
+    ...(tags.length && { tags: tags.join(',') }),
+    ...(recent && { recent: 'true' }),
+  });
   return (await invoke<{ recipes: Recipe[] }>(`search-recipes?${params}`, { method: 'GET' })).recipes;
 };
 

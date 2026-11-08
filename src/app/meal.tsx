@@ -1,22 +1,35 @@
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useState, type ComponentProps, type ReactNode } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+} from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Button } from '@/components/button';
+import { Card } from '@/components/card';
 import { Macros } from '@/components/food-card';
-import { GlucoseInsulinFields } from '@/components/glucose-insulin-fields';
 import { Row, Thumbnail } from '@/components/diary-entry';
-import { NutritionSummary } from '@/components/diary-summary';
+import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { SegmentedControl } from '@/components/segmented-control';
 import {
   confirmMeal,
   fetchMeals,
   formatQuantity,
+  formatTime,
   fromDay,
   onDay,
   parseGlucoseInsulin,
+  pickMealTime,
   sumNutrition,
   toMacros,
   type GlucoseInsulinForm,
@@ -25,9 +38,12 @@ import {
 import { i18n, t } from '@/lib/i18n';
 import { mealTypes, type MealType } from '@/lib/notifications';
 import { useProfile } from '@/lib/profile';
-import { colors, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography } from '@/theme';
 
-/** Componi pasto: voci di un pasto del giorno, glicemia e insulina per i diabetici, conferma nel diario. */
+/**
+ * Componi pasto: voci di un pasto del giorno e card di riepilogo (totali, glicemia e insulina per i diabetici, conferma).
+ * L'orario della dose non si mostra (come nel design): resta quello salvato o l'ora di apertura.
+ */
 export default function ComposeMeal() {
   const params = useLocalSearchParams<{ day: string; type?: string }>();
   const day = params.day;
@@ -105,9 +121,9 @@ export default function ComposeMeal() {
   const date = fromDay(day).toLocaleDateString(i18n.locale, { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <Screen keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
+    <Screen back keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <BackButton />
+        <BackButtonSpace />
         <View style={styles.headerText}>
           <Text style={styles.title} accessibilityRole="header">
             {t('diary.meal.title')}
@@ -127,8 +143,6 @@ export default function ComposeMeal() {
         <ActivityIndicator color={colors.primary} />
       ) : (
         <>
-          <Text style={typography.title}>{t(`reminders.meals.${type}`)}</Text>
-
           {items.map((item) => (
             <Pressable
               key={item.id}
@@ -144,23 +158,93 @@ export default function ComposeMeal() {
           ))}
 
           {items.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>{t('diary.meal.empty')}</Text>
-              <Button title={t('diary.meal.findFood')} onPress={() => router.navigate('/search')} />
-            </View>
+            <Text style={styles.emptyText}>{t('diary.meal.empty')}</Text>
           ) : (
-            <>
-              <NutritionSummary nutrition={sumNutrition(items)} title={t('diary.nutritionSummary')} />
+            <Card>
+              <Text style={styles.cardTitle}>{t(`reminders.meals.${type}`)}</Text>
+              <Macros nutrition={toMacros(sumNutrition(items))} long />
               {diabetic && form && (
-                <GlucoseInsulinFields form={form.values} onChange={(values) => setForm({ type, values })} />
+                <>
+                  <HealthRow
+                    icon={{ sf: 'drop', md: 'water_drop' }}
+                    label={t('diary.meal.enterGlucose')}
+                    suffix="mg/dL"
+                    value={form.values.glucose}
+                    onChangeText={(glucose) => setForm({ type, values: { ...form.values, glucose } })}
+                    keyboardType="number-pad"
+                    maxLength={3}>
+                    <TimeLink
+                      value={form.values.measuredAt}
+                      onChange={(measuredAt) => setForm({ type, values: { ...form.values, measuredAt } })}
+                    />
+                  </HealthRow>
+                  <HealthRow
+                    icon={{ sf: 'syringe', md: 'vaccines' }}
+                    label={t('diary.meal.insulinDose')}
+                    suffix={t('diary.insulinValue', { value: '' }).trim()}
+                    value={form.values.insulin}
+                    onChangeText={(insulin) => setForm({ type, values: { ...form.values, insulin } })}
+                    keyboardType="decimal-pad"
+                    maxLength={5}
+                  />
+                </>
               )}
               {meal?.confirmed_at && <Text style={styles.message}>{t('diary.meal.confirmed')}</Text>}
               <Button title={t('diary.meal.confirm')} loading={saving} onPress={confirm} />
-            </>
+            </Card>
           )}
         </>
       )}
     </Screen>
+  );
+}
+
+/** Riga grigia del riepilogo (glicemia, insulina): icona, etichetta e valore a destra. */
+function HealthRow({
+  icon,
+  label,
+  suffix,
+  children,
+  ...input
+}: TextInputProps & { icon: Pick<ComponentProps<typeof Icon>, 'sf' | 'md'>; label: string; suffix: string; children?: ReactNode }) {
+  return (
+    <View style={styles.healthRow}>
+      <View style={styles.healthIcon}>
+        <Icon {...icon} size={16} />
+      </View>
+      <View style={styles.healthText}>
+        <Text style={typography.label}>{label}</Text>
+        {children}
+      </View>
+      <TextInput
+        style={styles.healthInput}
+        placeholder="0"
+        placeholderTextColor={colors.textMuted}
+        accessibilityLabel={label}
+        {...input}
+      />
+      <Text style={styles.suffix}>{suffix}</Text>
+    </View>
+  );
+}
+
+/** "Ore 12:35 · Modifica orario": sheet `meal-time` su iOS, dialog di sistema su Android. */
+function TimeLink({ value, onChange }: { value: Date; onChange: (value: Date) => void }) {
+  function press() {
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({ value, mode: 'time', is24Hour: true, onValueChange: (_, date) => onChange(date) });
+    } else {
+      pickMealTime(value, onChange);
+    }
+  }
+
+  return (
+    <View style={styles.timeRow}>
+      <Text style={typography.caption}>{t('diary.at', { time: formatTime(value) })}</Text>
+      <Pressable onPress={press} hitSlop={spacing.md} accessibilityRole="button" accessibilityHint={t('diary.meal.editTimeHint')}>
+        <Text style={styles.link}>{t('diary.meal.editTime')}</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -185,13 +269,63 @@ const styles = StyleSheet.create({
     ...typography.body,
     textTransform: 'capitalize',
   },
-  empty: {
-    gap: spacing.lg,
-    marginTop: spacing.xl,
-  },
   emptyText: {
     ...typography.title,
     textAlign: 'center',
+    marginTop: spacing.xl,
+  },
+  cardTitle: {
+    ...typography.title,
+    textAlign: 'center',
+  },
+  healthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.inputBackground,
+  },
+  healthIcon: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+    backgroundColor: colors.primarySoft,
+  },
+  healthText: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  healthInput: {
+    minWidth: 56,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.border,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text,
+    fontVariant: ['tabular-nums'],
+  },
+  suffix: {
+    ...typography.caption,
+    // Larghezza fissa: "mg/dL" e "UI" lasciano i due campi in colonna.
+    width: 44,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    // Se non c'è spazio "Modifica orario" va a capo invece di finire sotto il campo a destra.
+    columnGap: spacing.sm,
+  },
+  link: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
   },
   message: {
     ...typography.body,

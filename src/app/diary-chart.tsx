@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { GlucoseChart, NutritionSummary } from '@/components/diary-summary';
@@ -37,9 +37,9 @@ export default function DiaryChart() {
   const max = profile?.glucose_max_mg_dl ?? null;
 
   return (
-    <Screen contentContainerStyle={styles.content}>
+    <Screen back contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <BackButton />
+        <BackButtonSpace />
         <Text style={styles.title} accessibilityRole="header">
           {t('diary.chart.title')}
         </Text>

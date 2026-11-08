@@ -85,9 +85,15 @@ export function Row({
   );
 }
 
-export function Thumbnail({ uri }: { uri: string | null }) {
+/** `contain` mostra la foto intera (con bande ai lati) invece di ritagliarla. */
+export function Thumbnail({ uri, contain }: { uri: string | null; contain?: boolean }) {
   return uri ? (
-    <Image source={{ uri }} style={styles.thumb} accessibilityIgnoresInvertColors />
+    <Image
+      source={{ uri }}
+      style={styles.thumb}
+      resizeMode={contain ? 'contain' : 'cover'}
+      accessibilityIgnoresInvertColors
+    />
   ) : (
     <View style={[styles.thumb, styles.placeholder]}>
       <Icon sf="fork.knife" md="restaurant" size={18} />

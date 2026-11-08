@@ -72,27 +72,37 @@ export default function RootLayout() {
               <Stack.Screen name="settings" />
               <Stack.Screen
                 name="search-filters"
-                options={{ presentation: 'formSheet', sheetAllowedDetents: [0.9], sheetGrabberVisible: true }}
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: [0.9], sheetGrabberVisible: true }}
               />
               <Stack.Screen name="scanner" options={{ presentation: 'fullScreenModal' }} />
               <Stack.Screen name="calendar" />
               <Stack.Screen name="diary-chart" />
+              <Stack.Screen name="recipe" />
+              <Stack.Screen name="product" />
+              <Stack.Screen
+                name="feedback"
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: [0.6, 0.95], sheetGrabberVisible: true }}
+              />
               <Stack.Screen name="meal" />
               <Stack.Screen
                 name="meal-item"
-                options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
+              />
+              <Stack.Screen
+                name="meal-time"
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
               />
               <Stack.Screen
                 name="glucose-insulin"
-                options={{ presentation: 'formSheet', sheetAllowedDetents: [0.75], sheetGrabberVisible: true }}
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: [0.75], sheetGrabberVisible: true }}
               />
               <Stack.Screen
                 name="diary-export"
-                options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}
               />
               <Stack.Screen
                 name="scanned-product"
-                options={{ presentation: 'formSheet', sheetAllowedDetents: [0.6], sheetGrabberVisible: true }}
+                options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: [0.6], sheetGrabberVisible: true }}
               />
             </Stack.Protected>
             {/* Also reachable later from Settings, to edit the profile. */}

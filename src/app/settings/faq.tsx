@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Screen } from '@/components/screen';
 import { t } from '@/lib/i18n';
 import { spacing, typography } from '@/theme';
@@ -8,8 +8,8 @@ import { spacing, typography } from '@/theme';
 /** Domande frequenti: per ora vuota. */
 export default function Faq() {
   return (
-    <Screen contentContainerStyle={styles.content}>
-      <BackButton />
+    <Screen back contentContainerStyle={styles.content}>
+      <BackButtonSpace />
       <Text style={typography.display} accessibilityRole="header">
         {t('faq.title')}
       </Text>

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
@@ -27,8 +27,8 @@ export default function GlucoseReminders() {
   }
 
   return (
-    <Screen contentContainerStyle={styles.content}>
-      <BackButton />
+    <Screen back contentContainerStyle={styles.content}>
+      <BackButtonSpace />
       <View style={styles.header}>
         <Text style={typography.display} accessibilityRole="header">
           {t('reminders.title')}

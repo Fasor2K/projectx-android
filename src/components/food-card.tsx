@@ -18,14 +18,21 @@ type Props = {
   nutrition?: Nutrition;
   /** A cosa si riferiscono i valori, se non è ovvio. */
   nutritionNote?: string;
+  /** Mostra la foto intera (con bande ai lati) invece di ritagliarla. */
+  containImage?: boolean;
 };
 
 /** Riga di un risultato: foto, voto, titolo e valori nutrizionali. */
-function FoodCard({ title, imageUrl, rating, details, nutrition, nutritionNote }: Props) {
+function FoodCard({ title, imageUrl, rating, details, nutrition, nutritionNote, containImage }: Props) {
   return (
     <Card style={styles.card}>
       {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.image} accessibilityIgnoresInvertColors />
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          resizeMode={containImage ? 'contain' : 'cover'}
+          accessibilityIgnoresInvertColors
+        />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
           <Icon sf="fork.knife" md="restaurant" size={28} />
@@ -62,24 +69,27 @@ function FoodCard({ title, imageUrl, rating, details, nutrition, nutritionNote }
   );
 }
 
-/** Etichette colorate dei valori nutrizionali (risultati di ricerca, voci del diario). */
-export function Macros({ nutrition }: { nutrition: Nutrition }) {
+/**
+ * Etichette colorate dei valori nutrizionali (risultati di ricerca, voci del diario).
+ * `long`: nomi per esteso e centrate, come nel riepilogo di Componi pasto.
+ */
+export function Macros({ nutrition, long = false }: { nutrition: Nutrition; long?: boolean }) {
   return (
-    <View style={styles.macros}>
-      <Macro kind="carbs" value={nutrition.carbs} />
-      <Macro kind="fat" value={nutrition.fat} />
-      <Macro kind="protein" value={nutrition.protein} />
-      <Macro kind="fiber" value={nutrition.fiber} />
-      <Macro kind="kcal" value={nutrition.kcal} />
+    <View style={[styles.macros, long && styles.centered]}>
+      <Macro kind="carbs" value={nutrition.carbs} long={long} />
+      <Macro kind="fat" value={nutrition.fat} long={long} />
+      <Macro kind="protein" value={nutrition.protein} long={long} />
+      <Macro kind="fiber" value={nutrition.fiber} long={long} />
+      <Macro kind="kcal" value={nutrition.kcal} long={long} />
     </View>
   );
 }
 
-function Macro({ kind, value }: { kind: keyof typeof macroColors; value: number }) {
+function Macro({ kind, value, long }: { kind: keyof typeof macroColors; value: number; long: boolean }) {
   return (
     <View style={[styles.macro, { backgroundColor: macroColors[kind].background }]}>
       <Text style={[styles.macroText, { color: macroColors[kind].text }]}>
-        {t(`food.${kind}`, { value: Math.round(value) })}
+        {t(long && kind !== 'kcal' ? `diary.${kind}Long` : `food.${kind}`, { value: Math.round(value) })}
       </Text>
     </View>
   );
@@ -92,6 +102,7 @@ export function ProductCard({ product: p }: { product: Product }) {
     <FoodCard
       title={p.name}
       imageUrl={p.image_url}
+      containImage
       rating={p.rating_avg}
       details={details || undefined}
       nutrition={{
@@ -165,6 +176,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
+  },
+  centered: {
+    justifyContent: 'center',
   },
   macro: {
     paddingHorizontal: spacing.sm,

@@ -21,7 +21,14 @@ import {
 } from '@/lib/search';
 import { colors, radius, shadow, spacing, typography } from '@/theme';
 
-type Results = { key: string; tab: SearchTab; recipes: Recipe[]; products: Product[]; failed?: boolean };
+type Results = {
+  key: string;
+  tab: SearchTab;
+  recipes: Recipe[];
+  products: Product[];
+  recent?: boolean;
+  failed?: boolean;
+};
 
 const SEARCH_DELAY_MS = 300;
 
@@ -36,7 +43,7 @@ export default function Search() {
   const [attempt, setAttempt] = useState(0);
   const [results, setResults] = useState<Results>();
 
-  // Gli endpoint vogliono almeno 2 caratteri: con meno si resta sui risultati suggeriti.
+  // Gli endpoint vogliono almeno 2 caratteri: con meno si mostrano i recenti (o i suggeriti, se non ce ne sono).
   const q = text.trim().length >= 2 ? text.trim() : undefined;
   // Solo "Popolari" ha già i dati: gli altri chip hanno bisogno di ricette e diario, che non esistono ancora.
   const unavailable = quick !== undefined && quick !== 'popular';
@@ -47,9 +54,17 @@ export default function Search() {
     let stale = false;
     const timer = setTimeout(async () => {
       try {
-        const recipes = tab === 'recipes' ? await searchRecipes(q, tags) : [];
-        const products = tab === 'products' ? await searchProducts(q) : [];
-        if (!stale) setResults({ key, tab, recipes, products });
+        const run = async (recent: boolean) => ({
+          recipes: tab === 'recipes' ? await searchRecipes(q, tags, recent) : [],
+          products: tab === 'products' ? await searchProducts(q, recent) : [],
+        });
+        let recent = !q;
+        let found = await run(recent);
+        if (recent && found.recipes.length + found.products.length === 0) {
+          recent = false;
+          found = await run(false);
+        }
+        if (!stale) setResults({ key, tab, ...found, recent });
       } catch {
         if (!stale) setResults({ key, tab, recipes: [], products: [], failed: true });
       }
@@ -144,24 +159,21 @@ export default function Search() {
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>{t(q ? 'search.results' : 'search.suggested')}</Text>
+      <Text style={styles.sectionTitle}>{t(q ? 'search.results' : current?.recent === false ? 'search.suggested' : 'search.recent')}</Text>
 
-      {/* shortcut: senza dettaglio ricetta/prodotto il tocco apre "Aggiungi a pasto"; da collegare al dettaglio quando esiste. */}
       {shownRecipes.map((recipe) => (
         <Pressable
           key={recipe.id}
-          onPress={() => router.push({ pathname: '/meal-item', params: { recipe_id: recipe.id } })}
-          accessibilityRole="button"
-          accessibilityHint={t('diary.item.addTitle')}>
+          onPress={() => router.push({ pathname: '/recipe', params: { id: recipe.id } })}
+          accessibilityRole="button">
           <RecipeCard recipe={recipe} />
         </Pressable>
       ))}
       {products.map((product) => (
         <Pressable
           key={product.id}
-          onPress={() => router.push({ pathname: '/meal-item', params: { product_id: product.id } })}
-          accessibilityRole="button"
-          accessibilityHint={t('diary.item.addTitle')}>
+          onPress={() => router.push({ pathname: '/product', params: { id: product.id } })}
+          accessibilityRole="button">
           <ProductCard product={product} />
         </Pressable>
       ))}

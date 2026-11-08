@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { BackButton } from '@/components/back-button';
+import { BackButtonSpace } from '@/components/back-button';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
@@ -61,8 +61,8 @@ export default function Register() {
   }
 
   return (
-    <Screen contentContainerStyle={styles.content}>
-      <BackButton />
+    <Screen back contentContainerStyle={styles.content}>
+      <BackButtonSpace />
 
       <Text style={[typography.display, styles.title]} accessibilityRole="header">
         {t('register.title')}

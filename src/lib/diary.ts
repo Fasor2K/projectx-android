@@ -1,3 +1,5 @@
+import { router } from 'expo-router';
+
 import { i18n, t } from '@/lib/i18n';
 import { invoke } from '@/lib/profile';
 import type { MealType } from '@/lib/notifications';
@@ -61,8 +63,11 @@ export const fetchDiary = (from: string, to = from) =>
   invoke<Diary>(`get-diary?${new URLSearchParams({ from, to })}`, { method: 'GET' });
 export const fetchMeals = async (date: string) =>
   (await invoke<{ meals: Meal[] }>(`get-meals?date=${date}`, { method: 'GET' })).meals;
-export const fetchFood = async (food: { recipe_id?: string; product_id?: string }) =>
-  (await invoke<{ food: Food }>(`get-food-nutrition?${new URLSearchParams(food)}`, { method: 'GET' })).food;
+export const fetchFood = async ({ recipe_id, product_id }: { recipe_id?: string; product_id?: string }) => {
+  // URLSearchParams trasforma undefined nella stringa "undefined": passa solo l'id presente.
+  const query = new URLSearchParams(recipe_id ? { recipe_id } : { product_id: product_id! });
+  return (await invoke<{ food: Food }>(`get-food-nutrition?${query}`, { method: 'GET' })).food;
+};
 export const saveMealItem = (body: {
   id?: string;
   recipe_id?: string;
@@ -172,3 +177,15 @@ export function parseGlucoseInsulin(form: GlucoseInsulinForm) {
     insulinText === '' ? undefined : /^\d{1,3}(\.\d)?$/.test(insulinText) && Number(insulinText) > 0 ? Number(insulinText) : null;
   return { glucose, insulin };
 }
+
+// shortcut: un solo callback alla volta, basta finché lo sheet `meal-time` si apre solo da Componi pasto.
+let mealTimeCallback: ((date: Date) => void) | undefined;
+
+/** Apre lo sheet "Modifica orario" della glicemia; `onPick` riceve l'orario confermato. */
+export function pickMealTime(value: Date, onPick: (date: Date) => void) {
+  mealTimeCallback = onPick;
+  router.push({ pathname: '/meal-time', params: { value: value.toISOString() } });
+}
+
+/** Chiamato da `meal-time` alla conferma. */
+export const confirmMealTime = (date: Date) => mealTimeCallback?.(date);

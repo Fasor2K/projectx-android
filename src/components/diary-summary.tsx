@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 
@@ -21,14 +22,30 @@ const macros = [
 const format = (value: number | null, digits = 0) =>
   new Intl.NumberFormat(i18n.locale, { maximumFractionDigits: digits }).format(Number(value));
 
-/** "Riepilogo nutrizionale": torta dei grammi di macronutrienti e valori del giorno o del pasto. */
-export function NutritionSummary({ nutrition, title = t('diary.nutritionSummary') }: { nutrition: Nutrition; title?: string }) {
+/**
+ * "Riepilogo nutrizionale": torta dei grammi di macronutrienti e valori del giorno o del pasto.
+ * Nel dettaglio ricetta e prodotto ("Bilancio nutrizionale") `accessory` sta accanto al titolo e `children` in fondo.
+ */
+export function NutritionSummary({
+  nutrition,
+  title = t('diary.nutritionSummary'),
+  accessory,
+  children,
+}: {
+  nutrition: Nutrition;
+  title?: string;
+  accessory?: ReactNode;
+  children?: ReactNode;
+}) {
   const total = macros.reduce((sum, m) => sum + Number(nutrition[m.key]), 0);
   let offset = 0;
 
   return (
     <Card style={styles.card}>
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.titleRow}>
+        <Text style={[styles.title, styles.rowTitle]}>{title}</Text>
+        {accessory}
+      </View>
       <View style={styles.nutrition}>
         <Svg width={DONUT} height={DONUT} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <Circle cx={DONUT / 2} cy={DONUT / 2} r={R} stroke={colors.border} strokeWidth={STROKE} fill="none" />
@@ -66,6 +83,7 @@ export function NutritionSummary({ nutrition, title = t('diary.nutritionSummary'
           <Text style={typography.label}>{t('diary.kcal', { value: format(nutrition.kcal) })}</Text>
         </View>
       </View>
+      {children}
     </Card>
   );
 }
@@ -167,12 +185,19 @@ export function GlucoseChart({
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   card: {
     gap: spacing.md,
   },
   title: {
     ...typography.title,
     textAlign: 'center',
+  },
+  rowTitle: {
+    flex: 1,
   },
   nutrition: {
     flexDirection: 'row',

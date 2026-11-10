@@ -16,6 +16,7 @@ export const en = {
   search: {
     title: 'Search',
     placeholder: 'Search...',
+    clear: 'Clear search',
     tabs: {
       recipes: 'Recipes',
       products: 'Products and ingredients',

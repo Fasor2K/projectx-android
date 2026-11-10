@@ -17,6 +17,7 @@ export const it: typeof en = {
   search: {
     title: 'Cerca',
     placeholder: 'Cerca...',
+    clear: 'Cancella ricerca',
     tabs: {
       recipes: 'Ricette',
       products: 'Prodotti e ingredienti',

@@ -121,7 +121,17 @@ export default function Search() {
             autoCorrect={false}
             returnKeyType="search"
           />
-          <Icon sf="magnifyingglass" md="search" tintColor={colors.textMuted} />
+          {text ? (
+            <Pressable
+              onPress={() => setText('')}
+              hitSlop={spacing.sm}
+              accessibilityRole="button"
+              accessibilityLabel={t('search.clear')}>
+              <Icon sf="xmark.circle.fill" md="cancel" tintColor={colors.textMuted} />
+            </Pressable>
+          ) : (
+            <Icon sf="magnifyingglass" md="search" tintColor={colors.textMuted} />
+          )}
         </View>
         {tab === 'recipes' ? (
           <Pressable

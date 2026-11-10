@@ -2,7 +2,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
-import { t } from '@/lib/i18n';
+import { i18n, t } from '@/lib/i18n';
 import type { Product, Recipe } from '@/lib/search';
 import { colors, macroColors, radius, spacing, typography } from '@/theme';
 
@@ -86,10 +86,11 @@ export function Macros({ nutrition, long = false }: { nutrition: Nutrition; long
 }
 
 function Macro({ kind, value, long }: { kind: keyof typeof macroColors; value: number; long: boolean }) {
+  const formatted = new Intl.NumberFormat(i18n.locale, { maximumFractionDigits: 1 }).format(value);
   return (
     <View style={[styles.macro, { backgroundColor: macroColors[kind].background }]}>
       <Text style={[styles.macroText, { color: macroColors[kind].text }]}>
-        {t(long && kind !== 'kcal' ? `diary.${kind}Long` : `food.${kind}`, { value: Math.round(value) })}
+        {t(long && kind !== 'kcal' ? `diary.${kind}Long` : `food.${kind}`, { value: formatted })}
       </Text>
     </View>
   );

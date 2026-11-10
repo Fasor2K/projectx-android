@@ -80,7 +80,7 @@ export function NutritionSummary({
               </Text>
             </View>
           ))}
-          <Text style={typography.label}>{t('diary.kcal', { value: format(nutrition.kcal) })}</Text>
+          <Text style={typography.label}>{t('diary.kcal', { value: format(nutrition.kcal, 1) })}</Text>
         </View>
       </View>
       {children}

@@ -1,18 +1,22 @@
-import { useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
+  useWindowDimensions,
   type TextInputInstance,
+  type ViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -50,6 +54,50 @@ export default function FeedbackSheet() {
   const review = kind === 'review';
   const label = review ? ('recipe_id' in food ? 'comments' : 'reviews') : 'reports';
   const insets = useSafeAreaInsets();
+
+  // Android impagina il formSheet sul detent più alto (0.95 in _layout): al primo (0.6) il fondo resta fuori
+  // schermo, quindi lo rialziamo della differenza perché il campo si veda come su iOS.
+  // Con la tastiera KeyboardAvoidingView sbaglia (usa la y relativa allo sheet): misuriamo noi quanto del contenitore,
+  // anche la parte fuori schermo, finisce sotto la tastiera, di nuovo quando lo sheet si ferma (la tastiera lo alza).
+  const navigation = useNavigation();
+  const { height } = useWindowDimensions();
+  const [detent, setDetent] = useState(0);
+  const [keyboardOverlap, setKeyboardOverlap] = useState(0);
+  const frameRef = useRef<ViewInstance>(null);
+  const keyboardTop = useRef<number | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const measure = () => {
+      const top = keyboardTop.current;
+      if (top === null) return setKeyboardOverlap(0);
+      // measureInWindow parte da sotto la status bar, la tastiera dallo schermo.
+      frameRef.current?.measureInWindow((_x, y, _w, h) =>
+        setKeyboardOverlap(Math.max(0, y + (StatusBar.currentHeight ?? 0) + h - top)),
+      );
+    };
+    const show = Keyboard.addListener('keyboardDidShow', (e) => {
+      keyboardTop.current = e.endCoordinates.screenY;
+      measure();
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => {
+      keyboardTop.current = null;
+      measure();
+    });
+    const sheet = navigation.addListener(
+      'sheetDetentChange' as never,
+      (e: { data: { index: number; stable: boolean } }) => {
+        if (!e.data.stable) return;
+        setDetent(e.data.index);
+        measure();
+      },
+    );
+    return () => {
+      show.remove();
+      hide.remove();
+      sheet();
+    };
+  }, [navigation]);
+  const hiddenBottom = Platform.OS === 'android' && detent === 0 ? (0.95 - 0.6) * height : 0;
 
   const { data, error, retry } = useFocusData(() => fetchFeedback(food, kind), JSON.stringify(params));
   const mine = data?.find((f) => f.is_mine);
@@ -131,7 +179,11 @@ export default function FeedbackSheet() {
   const showInput = data && (!mine || editing);
 
   return (
-    <KeyboardAvoidingView style={styles.sheet} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={[styles.sheet, { paddingBottom: keyboardOverlap || hiddenBottom }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* Riempie anche il padding: misura tutto il contenitore. */}
+      {Platform.OS === 'android' && <View ref={frameRef} style={StyleSheet.absoluteFill} pointerEvents="none" />}
       <Text style={styles.title} accessibilityRole="header">
         {t(`feedback.${label}`)}
       </Text>

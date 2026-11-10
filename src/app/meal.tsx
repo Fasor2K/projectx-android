@@ -43,7 +43,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 
 /**
  * Componi pasto: voci di un pasto del giorno e card di riepilogo (totali, glicemia e insulina per i diabetici, conferma).
- * L'orario della dose non si mostra (come nel design): resta quello salvato o l'ora di apertura.
+ * L'orario della dose non si mostra (come nel design): è l'ora di apertura.
  */
 export default function ComposeMeal() {
   const params = useLocalSearchParams<{ day: string; type?: string }>();
@@ -79,17 +79,9 @@ export default function ComposeMeal() {
   const meal = meals?.find((m) => m.meal_type === type);
   const items = meal?.items ?? [];
 
-  // Campi riempiti con i valori del pasto solo al caricamento e al cambio di pasto, non a ogni ritorno sulla schermata.
-  if (meals && form?.type !== type) {
-    setForm({
-      type,
-      values: {
-        glucose: meal?.glucose ? String(meal.glucose.glucose_mg_dl) : '',
-        measuredAt: meal?.glucose ? new Date(meal.glucose.measured_at) : new Date(),
-        insulin: meal?.insulin ? String(meal.insulin.units) : '',
-        administeredAt: meal?.insulin ? new Date(meal.insulin.administered_at) : new Date(),
-      },
-    });
+  // Campi vuoti a ogni composizione (ogni conferma aggiunge nuove voci al diario): si azzerano al cambio di pasto, non a ogni ritorno sulla schermata.
+  if (form?.type !== type) {
+    setForm({ type, values: { glucose: '', measuredAt: new Date(), insulin: '', administeredAt: new Date() } });
   }
 
   async function confirm() {

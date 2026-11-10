@@ -46,8 +46,6 @@ export type Meal = {
   meal_type: MealType;
   confirmed_at: string | null;
   items: MealItem[];
-  glucose: { id: string; glucose_mg_dl: number; measured_at: string } | null;
-  insulin: { id: string; units: number; administered_at: string } | null;
 };
 
 /** get-food-nutrition: valori per 100 g e per porzione; null se non calcolabili. */

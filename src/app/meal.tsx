@@ -4,6 +4,7 @@ import { useCallback, useState, type ComponentProps, type ReactNode } from 'reac
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
@@ -120,82 +121,86 @@ export default function ComposeMeal() {
 
   const date = fromDay(day).toLocaleDateString(i18n.locale, { weekday: 'long', day: 'numeric', month: 'long' });
 
-  return (
-    <Screen back keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <BackButtonSpace />
-        <View style={styles.headerText}>
-          <Text style={styles.title} accessibilityRole="header">
-            {t('diary.meal.title')}
-          </Text>
-          <Text style={styles.date}>{date}</Text>
-        </View>
-      </View>
-
-      <SegmentedControl options={mealTypes} value={type} onChange={setType} label={(m) => t(`reminders.meals.${m}`)} />
-
-      {failed ? (
+  // Riepilogo e conferma fissi in fondo mentre le voci scorrono.
+  const summary = !failed && items.length > 0 && (
+    <Card>
+      <Text style={styles.cardTitle}>{t(`reminders.meals.${type}`)}</Text>
+      <Macros nutrition={toMacros(sumNutrition(items))} long />
+      {diabetic && form && (
         <>
-          <Text style={styles.message}>{t('diary.loadFailed')}</Text>
-          <Button title={t('common.retry')} onPress={() => setAttempt(attempt + 1)} />
-        </>
-      ) : !meals ? (
-        <ActivityIndicator color={colors.primary} />
-      ) : (
-        <>
-          {items.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => router.push({ pathname: '/meal-item', params: { item: JSON.stringify(item), type } })}
-              accessibilityRole="button">
-              <Row
-                leading={<Thumbnail uri={item.image_url} />}
-                title={item.title}
-                value={formatQuantity(Number(item.quantity), item.quantity_mode)}>
-                <Macros nutrition={toMacros(item)} />
-              </Row>
-            </Pressable>
-          ))}
-
-          {items.length === 0 ? (
-            <Text style={styles.emptyText}>{t('diary.meal.empty')}</Text>
-          ) : (
-            <Card>
-              <Text style={styles.cardTitle}>{t(`reminders.meals.${type}`)}</Text>
-              <Macros nutrition={toMacros(sumNutrition(items))} long />
-              {diabetic && form && (
-                <>
-                  <HealthRow
-                    icon={{ sf: 'drop', md: 'water_drop' }}
-                    label={t('diary.meal.enterGlucose')}
-                    suffix="mg/dL"
-                    value={form.values.glucose}
-                    onChangeText={(glucose) => setForm({ type, values: { ...form.values, glucose } })}
-                    keyboardType="number-pad"
-                    maxLength={3}>
-                    <TimeLink
-                      value={form.values.measuredAt}
-                      onChange={(measuredAt) => setForm({ type, values: { ...form.values, measuredAt } })}
-                    />
-                  </HealthRow>
-                  <HealthRow
-                    icon={{ sf: 'syringe', md: 'vaccines' }}
-                    label={t('diary.meal.insulinDose')}
-                    suffix={t('diary.insulinValue', { value: '' }).trim()}
-                    value={form.values.insulin}
-                    onChangeText={(insulin) => setForm({ type, values: { ...form.values, insulin } })}
-                    keyboardType="decimal-pad"
-                    maxLength={5}
-                  />
-                </>
-              )}
-              {meal?.confirmed_at && <Text style={styles.message}>{t('diary.meal.confirmed')}</Text>}
-              <Button title={t('diary.meal.confirm')} loading={saving} onPress={confirm} />
-            </Card>
-          )}
+          <HealthRow
+            icon={{ sf: 'drop', md: 'water_drop' }}
+            label={t('diary.meal.enterGlucose')}
+            suffix="mg/dL"
+            value={form.values.glucose}
+            onChangeText={(glucose) => setForm({ type, values: { ...form.values, glucose } })}
+            keyboardType="number-pad"
+            maxLength={3}>
+            <TimeLink
+              value={form.values.measuredAt}
+              onChange={(measuredAt) => setForm({ type, values: { ...form.values, measuredAt } })}
+            />
+          </HealthRow>
+          <HealthRow
+            icon={{ sf: 'syringe', md: 'vaccines' }}
+            label={t('diary.meal.insulinDose')}
+            suffix={t('diary.insulinValue', { value: '' }).trim()}
+            value={form.values.insulin}
+            onChangeText={(insulin) => setForm({ type, values: { ...form.values, insulin } })}
+            keyboardType="decimal-pad"
+            maxLength={5}
+          />
         </>
       )}
-    </Screen>
+      {meal?.confirmed_at && <Text style={styles.message}>{t('diary.meal.confirmed')}</Text>}
+      <Button title={t('diary.meal.confirm')} loading={saving} onPress={confirm} />
+    </Card>
+  );
+
+  return (
+    // Il riepilogo fisso ha i campi glicemia/insulina: su iOS va spinto sopra la tastiera (come in feedback.tsx).
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Screen back keyboardDismissMode="on-drag" contentContainerStyle={styles.content} footer={summary || undefined}>
+        <View style={styles.header}>
+          <BackButtonSpace />
+          <View style={styles.headerText}>
+            <Text style={styles.title} accessibilityRole="header">
+              {t('diary.meal.title')}
+            </Text>
+            <Text style={styles.date}>{date}</Text>
+          </View>
+        </View>
+
+        <SegmentedControl options={mealTypes} value={type} onChange={setType} label={(m) => t(`reminders.meals.${m}`)} />
+
+        {failed ? (
+          <>
+            <Text style={styles.message}>{t('diary.loadFailed')}</Text>
+            <Button title={t('common.retry')} onPress={() => setAttempt(attempt + 1)} />
+          </>
+        ) : !meals ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <>
+            {items.map((item) => (
+              <Pressable
+                key={item.id}
+                onPress={() => router.push({ pathname: '/meal-item', params: { item: JSON.stringify(item), type } })}
+                accessibilityRole="button">
+                <Row
+                  leading={<Thumbnail uri={item.image_url} />}
+                  title={item.title}
+                  value={formatQuantity(Number(item.quantity), item.quantity_mode)}>
+                  <Macros nutrition={toMacros(item)} />
+                </Row>
+              </Pressable>
+            ))}
+
+            {items.length === 0 && <Text style={styles.emptyText}>{t('diary.meal.empty')}</Text>}
+          </>
+        )}
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -249,6 +254,9 @@ function TimeLink({ value, onChange }: { value: Date; onChange: (value: Date) =>
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   content: {
     gap: spacing.lg,
     paddingHorizontal: spacing.lg,

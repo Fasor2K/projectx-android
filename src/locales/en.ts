@@ -453,7 +453,7 @@ export const en = {
       measuredAt: 'Measurement time',
       administeredAt: 'Dose time',
       confirm: 'Confirm meal and add to Diary',
-      confirmed: 'This meal is already in your diary.',
+      confirmed: 'These foods will be added to the ones already in your diary.',
       invalidGlucose: 'Enter a glucose value from 1 to 999 mg/dL.',
       invalidInsulin: 'Enter an insulin dose greater than 0 (at most 999, one decimal).',
     },

@@ -457,7 +457,7 @@ export const it: typeof en = {
       insulinDose: 'Dosi di insulina',
       measuredAt: 'Orario della misurazione',
       administeredAt: 'Orario della dose',
-      confirm: 'Conferma pasto e Aggiungi al Diario',
+      confirm: 'Conferma e Aggiungi al Diario',
       confirmed: 'Questi alimenti si aggiungeranno a quelli già nel diario.',
       invalidGlucose: 'Inserisci una glicemia da 1 a 999 mg/dL.',
       invalidInsulin: "Inserisci una dose d'insulina maggiore di 0 (al massimo 999, un decimale).",

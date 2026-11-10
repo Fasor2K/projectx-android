@@ -18,7 +18,7 @@ export const en = {
     placeholder: 'Search...',
     tabs: {
       recipes: 'Recipes',
-      products: 'Products',
+      products: 'Products and ingredients',
     },
     filters: 'Filters, %{count} selected',
     scan: 'Scan a barcode',

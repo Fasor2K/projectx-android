@@ -19,7 +19,7 @@ export const it: typeof en = {
     placeholder: 'Cerca...',
     tabs: {
       recipes: 'Ricette',
-      products: 'Prodotti',
+      products: 'Prodotti e ingredienti',
     },
     filters: 'Filtri, %{count} selezionati',
     scan: 'Scansiona un codice a barre',

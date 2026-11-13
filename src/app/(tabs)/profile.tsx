@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
@@ -8,7 +8,7 @@ import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { SegmentedControl } from '@/components/segmented-control';
 import { i18n, t } from '@/lib/i18n';
-import { fetchProfileStats, useProfile, type ProfileStats } from '@/lib/profile';
+import { fetchMyRecipes, fetchProfileStats, useProfile, type MyRecipe, type ProfileStats } from '@/lib/profile';
 import { colors, radius, spacing, typography } from '@/theme';
 
 const AVATAR_SIZE = 96;
@@ -16,16 +16,18 @@ const AVATAR_SIZE = 96;
 const sections = ['recipes', 'saved', 'posts'] as const;
 type Section = (typeof sections)[number];
 
-/** Profilo dell'utente loggato. Le griglie di ricette e post non sono ancora collegate: solo empty state. */
+/** Profilo dell'utente loggato. "Ricette salvate" e "Post" non sono ancora collegati: solo empty state. */
 export default function Profile() {
   const { profile } = useProfile();
   const [stats, setStats] = useState<ProfileStats>();
+  const [recipes, setRecipes] = useState<MyRecipe[]>();
   const [section, setSection] = useState<Section>('recipes');
 
   // Ricaricati a ogni ritorno sul tab: i contatori cambiano da altre schermate.
   useFocusEffect(
     useCallback(() => {
       fetchProfileStats().then(setStats, () => {});
+      fetchMyRecipes().then(setRecipes, () => {});
     }, []),
   );
 
@@ -101,10 +103,50 @@ export default function Profile() {
         label={(value) => t(`profile.sections.${value}`)}
       />
 
-      <View style={styles.empty}>
-        <Text style={typography.title}>{t(`profile.empty.${section}`)}</Text>
-      </View>
+      {section === 'recipes' && recipes?.length ? (
+        <View style={styles.grid}>
+          {recipes.map((recipe) => (
+            <RecipeTile key={recipe.id} recipe={recipe} />
+          ))}
+        </View>
+      ) : (
+        <View style={styles.empty}>
+          <Text style={typography.title}>{t(`profile.empty.${section}`)}</Text>
+        </View>
+      )}
     </Screen>
+  );
+}
+
+/** Ricetta della griglia: foto (o fotocamera), icona bozza o lucchetto; le pubblicate aprono il dettaglio. */
+function RecipeTile({ recipe }: { recipe: MyRecipe }) {
+  const badge = recipe.is_draft
+    ? ({ sf: 'doc.text', md: 'edit_note', label: t('profile.draft') } as const)
+    : recipe.is_private
+      ? ({ sf: 'lock', md: 'lock', label: t('profile.private') } as const)
+      : undefined;
+  const title: string = recipe.title ?? t('profile.untitled');
+  return (
+    <Pressable
+      onPress={() =>
+        recipe.is_draft
+          ? Alert.alert(t('profile.draft'), t('profile.draftUnavailable'))
+          : router.push({ pathname: '/recipe', params: { id: recipe.id } })
+      }
+      accessibilityRole="button"
+      accessibilityLabel={badge ? `${title}, ${badge.label}` : title}
+      style={styles.tile}>
+      {recipe.cover_image_url ? (
+        <Image source={{ uri: recipe.cover_image_url }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
+      ) : (
+        <Icon sf="camera" md="photo_camera" size={32} tintColor={colors.textSecondary} />
+      )}
+      {badge && (
+        <View style={styles.tileBadge}>
+          <Icon sf={badge.sf} md={badge.md} size={16} tintColor={colors.text} />
+        </View>
+      )}
+    </Pressable>
   );
 }
 
@@ -186,6 +228,32 @@ const styles = StyleSheet.create({
   statLabel: {
     ...typography.caption,
     letterSpacing: 0.5,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  tile: {
+    // Tre per riga: (100% - 2 spazi) / 3.
+    width: '31.5%',
+    aspectRatio: 0.85,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: radius.lg,
+    backgroundColor: colors.inputBorder,
+  },
+  tileBadge: {
+    position: 'absolute',
+    right: spacing.sm,
+    bottom: spacing.sm,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
   },
   empty: {
     flex: 1,

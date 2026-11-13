@@ -10,17 +10,19 @@ type Props = ScrollViewProps & {
   back?: boolean | 'close';
   /** Azioni principali fisse in fondo, sopra la safe area. */
   footer?: ReactNode;
+  /** Azioni fisse in alto a destra, alla stessa altezza dell'indietro (es. "Pubblica"). */
+  headerRight?: ReactNode;
 };
 
 /**
  * Schermata con lo sfondo a gradiente dell'app e contenuto scrollabile sopra la tastiera.
  * Il contenuto scorre anche sotto le safe area; indietro e `footer` restano fissi.
  */
-export function Screen({ back, footer, contentContainerStyle, ...props }: Props) {
+export function Screen({ back, footer, headerRight, contentContainerStyle, ...props }: Props) {
   const insets = useSafeAreaInsets();
   const bottom = footer ? spacing.xl : insets.bottom + spacing.xl;
 
-  const fixed = !!back || !!footer;
+  const fixed = !!back || !!footer || !!headerRight;
   const scroll = (
     <ScrollView
       style={fixed ? styles.scroll : styles.root}
@@ -48,6 +50,7 @@ export function Screen({ back, footer, contentContainerStyle, ...props }: Props)
           <BackButton close={back === 'close'} />
         </View>
       )}
+      {headerRight && <View style={[styles.headerRight, { top: insets.top + spacing.xl }]}>{headerRight}</View>}
       {scroll}
       {footer && <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>{footer}</View>}
     </View>
@@ -71,6 +74,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.xl,
     zIndex: 1,
+  },
+  headerRight: {
+    position: 'absolute',
+    right: spacing.xl,
+    zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   footer: {
     gap: spacing.md,

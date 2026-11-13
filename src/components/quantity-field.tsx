@@ -27,41 +27,59 @@ type Props = {
   info?: string;
 };
 
-/** Stepper "- 50 +" e scelta "Grammi / Porzioni" (Aggiungi a pasto, dettaglio ricetta e prodotto). */
-export function QuantityField({ quantity, onChangeQuantity, mode, modes, onChangeMode, info }: Props) {
-  const amount = parseQuantity(quantity);
+/** Stepper "- 50 +" con il valore modificabile; non scende sotto `step`. */
+export function Stepper({
+  value,
+  onChange,
+  step,
+  label = t('diary.item.quantity'),
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  step: number;
+  /** Etichetta di accessibilità del valore. */
+  label?: string;
+}) {
+  const amount = parseQuantity(value);
 
-  function step(direction: 1 | -1) {
-    const next = Math.max(STEP[mode], (isValidQuantity(amount) ? amount : 0) + direction * STEP[mode]);
-    onChangeQuantity(String(Math.round(next * 100) / 100));
+  function move(direction: 1 | -1) {
+    const next = Math.max(step, (isValidQuantity(amount) ? amount : 0) + direction * step);
+    onChange(String(Math.round(next * 100) / 100));
   }
 
+  return (
+    <View style={styles.stepper}>
+      <Pressable
+        onPress={() => move(-1)}
+        accessibilityRole="button"
+        accessibilityLabel={t('diary.item.decrease')}
+        style={styles.stepButton}>
+        <Icon sf="minus" md="remove" tintColor={colors.text} />
+      </Pressable>
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        keyboardType="decimal-pad"
+        accessibilityLabel={label}
+        style={styles.quantity}
+        maxLength={7}
+      />
+      <Pressable
+        onPress={() => move(1)}
+        accessibilityRole="button"
+        accessibilityLabel={t('diary.item.increase')}
+        style={styles.stepButton}>
+        <Icon sf="plus" md="add" tintColor={colors.text} />
+      </Pressable>
+    </View>
+  );
+}
+
+/** Stepper "- 50 +" e scelta "Grammi / Porzioni" (Aggiungi a pasto, dettaglio ricetta e prodotto). */
+export function QuantityField({ quantity, onChangeQuantity, mode, modes, onChangeMode, info }: Props) {
   const field = (
     <View style={styles.row}>
-      <View style={styles.stepper}>
-        <Pressable
-          onPress={() => step(-1)}
-          accessibilityRole="button"
-          accessibilityLabel={t('diary.item.decrease')}
-          style={styles.stepButton}>
-          <Icon sf="minus" md="remove" tintColor={colors.text} />
-        </Pressable>
-        <TextInput
-          value={quantity}
-          onChangeText={onChangeQuantity}
-          keyboardType="decimal-pad"
-          accessibilityLabel={t('diary.item.quantity')}
-          style={styles.quantity}
-          maxLength={7}
-        />
-        <Pressable
-          onPress={() => step(1)}
-          accessibilityRole="button"
-          accessibilityLabel={t('diary.item.increase')}
-          style={styles.stepButton}>
-          <Icon sf="plus" md="add" tintColor={colors.text} />
-        </Pressable>
-      </View>
+      <Stepper value={quantity} onChange={onChangeQuantity} step={STEP[mode]} />
       <SegmentedControl
         options={modes}
         value={mode}

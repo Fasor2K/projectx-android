@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import { invoke } from '@/lib/profile';
 
@@ -75,3 +75,57 @@ export const SearchFiltersContext = createContext<{
 }>({ tags: [], setTags: () => {} });
 
 export const useSearchFilters = () => useContext(SearchFiltersContext);
+
+const SEARCH_DELAY_MS = 300;
+
+type Results = { key: string; tab: SearchTab; recipes: Recipe[]; products: Product[]; recent?: boolean; failed?: boolean };
+
+/**
+ * Ricerca di Cerca e di Aggiungi ingrediente, con un ritardo mentre si scrive. Senza testo (`q` assente) mostra i
+ * recenti e, se non ce ne sono, i suggeriti (`recent` = false). `enabled` false: nessuna richiesta e nessun risultato.
+ */
+export function useFoodSearch(tab: SearchTab, q: string | undefined, tags: string[], enabled = true) {
+  const [attempt, setAttempt] = useState(0);
+  const [results, setResults] = useState<Results>();
+  const key = JSON.stringify([tab, q, tab === 'recipes' ? tags : [], attempt]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let stale = false;
+    const timer = setTimeout(async () => {
+      try {
+        const run = async (recent: boolean) => ({
+          recipes: tab === 'recipes' ? await searchRecipes(q, tags, recent) : [],
+          products: tab === 'products' ? await searchProducts(q, recent) : [],
+        });
+        let recent = !q;
+        let found = await run(recent);
+        if (recent && found.recipes.length + found.products.length === 0) {
+          recent = false;
+          found = await run(false);
+        }
+        if (!stale) setResults({ key, tab, ...found, recent });
+      } catch {
+        if (!stale) setResults({ key, tab, recipes: [], products: [], failed: true });
+      }
+    }, SEARCH_DELAY_MS);
+    return () => {
+      stale = true;
+      clearTimeout(timer);
+    };
+    // key contiene già tab, q, tags e attempt.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, enabled]);
+
+  // I risultati dell'altro tab non si mostrano mentre arrivano quelli nuovi.
+  const current = results?.tab === tab && enabled ? results : undefined;
+  const loading = enabled && results?.key !== key;
+  return {
+    recipes: current?.recipes ?? [],
+    products: current?.products ?? [],
+    recent: current?.recent,
+    loading,
+    failed: enabled && !loading && !!results?.failed,
+    retry: () => setAttempt((a) => a + 1),
+  };
+}

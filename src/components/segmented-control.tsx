@@ -4,7 +4,8 @@ import { colors, radius, spacing, typography } from '@/theme';
 
 type Props<T extends string> = {
   options: readonly T[];
-  value: T;
+  /** undefined = nessuna opzione scelta (scelta facoltativa). */
+  value: T | undefined;
   onChange: (value: T) => void;
   label: (value: T) => string;
   style?: StyleProp<ViewStyle>;

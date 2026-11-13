@@ -59,6 +59,18 @@ type ProfileBody = { profile: Profile | null };
 export const fetchProfile = async () => (await invoke<ProfileBody>('get-profile', { method: 'GET' })).profile;
 export const saveProfile = async (input: ProfileInput) =>
   (await invoke<ProfileBody>('save-profile', { method: 'POST', body: input })).profile;
+/** get-my-recipes: ricette dell'utente per la griglia del Profilo, bozze e private comprese. */
+export type MyRecipe = {
+  id: string;
+  /** null solo nelle bozze. */
+  title: string | null;
+  cover_image_url: string | null;
+  is_draft: boolean;
+  is_private: boolean;
+};
+
+export const fetchMyRecipes = async () =>
+  (await invoke<{ recipes: MyRecipe[] }>('get-my-recipes', { method: 'GET' })).recipes;
 export const fetchProfileStats = async () =>
   (await invoke<{ stats: ProfileStats }>('get-profile-stats', { method: 'GET' })).stats;
 export const updateNickname = async (nickname: string) =>

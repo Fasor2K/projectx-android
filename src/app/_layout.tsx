@@ -85,6 +85,7 @@ export default function RootLayout() {
               />
               <Stack.Screen name="meal" />
               <Stack.Screen name="new-recipe" />
+              <Stack.Screen name="new-post" />
               <Stack.Screen
                 name="meal-item"
                 options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }}

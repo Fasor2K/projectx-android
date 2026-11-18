@@ -66,10 +66,9 @@ type CreateMenuProps = { open: boolean; progress: Animated.Value; onClose: () =>
 
 function CreateMenu({ open, progress, onClose }: CreateMenuProps) {
   const insets = useSafeAreaInsets();
-  // shortcut: Nuovo post only closes the menu, wire it when the screen exists.
   const items = [
     { label: t('tabs.newRecipe'), open: () => router.push('/new-recipe') },
-    { label: t('tabs.newPost'), open: undefined },
+    { label: t('tabs.newPost'), open: () => router.push('/new-post') },
   ];
 
   return (
@@ -91,7 +90,7 @@ function CreateMenu({ open, progress, onClose }: CreateMenuProps) {
             accessibilityRole="button"
             onPress={() => {
               onClose();
-              openItem?.();
+              openItem();
             }}
             style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}>
             <Text style={styles.label}>{label}</Text>

@@ -85,6 +85,28 @@ export type MyPost = {
 
 export const fetchMyPosts = async () => (await invoke<{ posts: MyPost[] }>('get-my-posts', { method: 'GET' })).posts;
 export const deletePost = (id: string) => invoke<{ deleted: true }>('edit-post', { method: 'POST', body: { id, delete: true } });
+
+type LikeResult = { liked: boolean; likes_count: number };
+export const likePost = (postId: string, like: boolean) =>
+  invoke<LikeResult>('like-post', { method: 'POST', body: { post_id: postId, like } });
+
+/** get-post-comments: commento di un post, dal più recente. liked = Mi piace dell'utente. */
+export type PostComment = {
+  id: string;
+  body: string;
+  created_at: string;
+  likes_count: number;
+  author: { id: string; nickname: string; avatar_url: string | null };
+  liked: boolean;
+};
+
+export const fetchPostComments = async (postId: string) =>
+  (await invoke<{ comments: PostComment[] }>(`get-post-comments?${new URLSearchParams({ post_id: postId })}`, { method: 'GET' }))
+    .comments;
+export const addPostComment = (postId: string, body: string) =>
+  invoke<{ id: string; comments_count: number }>('create-post-comment', { method: 'POST', body: { post_id: postId, body } });
+export const likePostComment = (commentId: string, like: boolean) =>
+  invoke<LikeResult>('like-post-comment', { method: 'POST', body: { comment_id: commentId, like } });
 export const fetchProfileStats = async () =>
   (await invoke<{ stats: ProfileStats }>('get-profile-stats', { method: 'GET' })).stats;
 export const updateNickname = async (nickname: string) =>

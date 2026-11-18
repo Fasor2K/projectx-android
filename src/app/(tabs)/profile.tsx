@@ -14,6 +14,7 @@ import {
   fetchMyPosts,
   fetchMyRecipes,
   fetchProfileStats,
+  likePost,
   useProfile,
   type MyPost,
   type MyRecipe,
@@ -44,6 +45,20 @@ export default function Profile() {
       fetchMyPosts().then(setPosts, () => {});
     }, []),
   );
+
+  function updatePost(id: string, changes: Partial<MyPost>) {
+    setPosts((list) => list?.map((p) => (p.id === id ? { ...p, ...changes } : p)));
+  }
+
+  // Ottimistico: il cuore cambia subito e torna com'era se like-post fallisce.
+  function toggleLike(post: MyPost) {
+    const liked = !post.liked;
+    updatePost(post.id, { liked, likes_count: post.likes_count + (liked ? 1 : -1) });
+    likePost(post.id, liked).then(
+      (r) => updatePost(post.id, { liked: r.liked, likes_count: r.likes_count }),
+      () => updatePost(post.id, { liked: post.liked, likes_count: post.likes_count }),
+    );
+  }
 
   if (!profile) return null;
 
@@ -131,6 +146,7 @@ export default function Profile() {
               post={post}
               author={profile}
               onDeleted={() => setPosts((list) => list?.filter((p) => p.id !== post.id))}
+              onLike={() => toggleLike(post)}
             />
           ))}
         </View>
@@ -175,8 +191,18 @@ function RecipeTile({ recipe }: { recipe: MyRecipe }) {
   );
 }
 
-/** Post del Profilo: autore, tempo e visibilità, testo, foto, Mi piace e commenti (solo contatori), condividi e menu "…". */
-function PostCard({ post, author, onDeleted }: { post: MyPost; author: ProfileData; onDeleted: () => void }) {
+/** Post del Profilo: autore, tempo e visibilità, testo, foto, Mi piace, commenti (sheet `feedback`), condividi e menu "…". */
+function PostCard({
+  post,
+  author,
+  onDeleted,
+  onLike,
+}: {
+  post: MyPost;
+  author: ProfileData;
+  onDeleted: () => void;
+  onLike: () => void;
+}) {
   const general = post.community === null;
 
   function confirmDelete() {
@@ -234,7 +260,13 @@ function PostCard({ post, author, onDeleted }: { post: MyPost; author: ProfileDa
       {post.image_url && <Image source={{ uri: post.image_url }} style={styles.postImage} accessibilityIgnoresInvertColors />}
 
       <View style={styles.postActions}>
-        <View style={styles.postCount} accessible accessibilityLabel={t('profile.post.likes', { count: post.likes_count })}>
+        <Pressable
+          onPress={onLike}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.post.likes', { count: post.likes_count })}
+          accessibilityState={{ selected: post.liked }}
+          hitSlop={spacing.sm}
+          style={styles.postCount}>
           <Icon
             sf={post.liked ? 'heart.fill' : 'heart'}
             md="favorite"
@@ -242,11 +274,16 @@ function PostCard({ post, author, onDeleted }: { post: MyPost; author: ProfileDa
             tintColor={post.liked ? colors.danger : colors.textSecondary}
           />
           <Text style={typography.caption}>{post.likes_count}</Text>
-        </View>
-        <View style={styles.postCount} accessible accessibilityLabel={t('profile.post.comments', { count: post.comments_count })}>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push({ pathname: '/feedback', params: { post_id: post.id } })}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.post.comments', { count: post.comments_count })}
+          hitSlop={spacing.sm}
+          style={styles.postCount}>
           <Icon sf="bubble.left" md="chat_bubble" size={20} tintColor={colors.textSecondary} />
           <Text style={typography.caption}>{post.comments_count}</Text>
-        </View>
+        </Pressable>
         <Pressable
           onPress={() => Share.share({ message: post.body })}
           accessibilityRole="button"

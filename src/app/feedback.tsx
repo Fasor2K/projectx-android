@@ -34,6 +34,7 @@ import {
   type FoodRef,
 } from '@/lib/food';
 import { t } from '@/lib/i18n';
+import { addPostComment, fetchPostComments, likePostComment, type PostComment } from '@/lib/profile';
 import { colors, radius, reviewColors, spacing, typography } from '@/theme';
 
 const MAX_TEXT = 1000;
@@ -42,17 +43,20 @@ const STARS = [1, 2, 3, 4, 5];
 /**
  * Sheet "Commenti" (ricette) / "Recensioni" (prodotti) con le stelle, o "Segnalazioni" senza, come nel design:
  * elenco e campo in fondo. Uno per utente e tipo: il proprio sta in cima e si modifica o elimina dal suo menu.
+ * Con `post_id` sono i commenti di un post: quanti se ne vuole, senza stelle né menu, con il cuore a destra.
  */
 export default function FeedbackSheet() {
   const params = useLocalSearchParams<{
     recipe_id?: string;
     product_id?: string;
     kind?: FeedbackKind;
+    post_id?: string;
   }>();
+  const postId = params.post_id;
   const food: FoodRef = params.recipe_id ? { recipe_id: params.recipe_id } : { product_id: params.product_id! };
   const kind: FeedbackKind = params.kind === 'report' ? 'report' : 'review';
-  const review = kind === 'review';
-  const label = review ? ('recipe_id' in food ? 'comments' : 'reviews') : 'reports';
+  const review = !postId && kind === 'review';
+  const label = postId || (review && 'recipe_id' in food) ? 'comments' : review ? 'reviews' : 'reports';
   const insets = useSafeAreaInsets();
 
   // Android impagina il formSheet sul detent più alto (0.95 in _layout): al primo (0.6) il fondo resta fuori
@@ -99,9 +103,24 @@ export default function FeedbackSheet() {
   }, [navigation]);
   const hiddenBottom = Platform.OS === 'android' && detent === 0 ? (0.95 - 0.6) * height : 0;
 
-  const { data, error, retry } = useFocusData(() => fetchFeedback(food, kind), JSON.stringify(params));
-  const mine = data?.find((f) => f.is_mine);
+  const { data, error, retry } = useFocusData<(Feedback | PostComment)[]>(
+    () => (postId ? fetchPostComments(postId) : fetchFeedback(food, kind)),
+    JSON.stringify(params),
+  );
+  const mine = data?.find((f): f is Feedback => 'is_mine' in f && f.is_mine);
   const items = data && (mine ? [mine, ...data.filter((f) => f !== mine)] : data);
+
+  // Mi piace ai commenti dei post, ottimistici: valgono sopra i dati letti finché non si ricarica.
+  const [likes, setLikes] = useState<Record<string, Pick<PostComment, 'liked' | 'likes_count'>>>({});
+  function toggleLike(comment: PostComment) {
+    const before = likes[comment.id] ?? comment;
+    const liked = !before.liked;
+    setLikes((l) => ({ ...l, [comment.id]: { liked, likes_count: before.likes_count + (liked ? 1 : -1) } }));
+    likePostComment(comment.id, liked).then(
+      (r) => setLikes((l) => ({ ...l, [comment.id]: r })),
+      () => setLikes((l) => ({ ...l, [comment.id]: { liked: before.liked, likes_count: before.likes_count } })),
+    );
+  }
 
   const [editing, setEditing] = useState(false);
   const [rating, setRating] = useState(0);
@@ -120,7 +139,8 @@ export default function FeedbackSheet() {
     const body = text.trim() || undefined;
     setSending(true);
     try {
-      if (editing && mine) await editFeedback(mine.id, review ? rating : undefined, body);
+      if (postId) await addPostComment(postId, body!);
+      else if (editing && mine) await editFeedback(mine.id, review ? rating : undefined, body);
       else
         await saveFeedback({
           ...food,
@@ -133,6 +153,7 @@ export default function FeedbackSheet() {
       Alert.alert(t('feedback.sendFailed'), t('authErrors.generic'));
     } finally {
       setSending(false);
+      setLikes({});
       retry();
     }
   }
@@ -189,9 +210,13 @@ export default function FeedbackSheet() {
       </Text>
 
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent} keyboardShouldPersistTaps="handled">
-        {items?.map((f) => (
-          <FeedbackCard key={f.id} item={f} onMenu={f.is_mine ? () => openMenu(f) : undefined} />
-        ))}
+        {items?.map((f) =>
+          'is_mine' in f ? (
+            <FeedbackCard key={f.id} item={f} onMenu={f.is_mine ? () => openMenu(f) : undefined} />
+          ) : (
+            <CommentCard key={f.id} comment={{ ...f, ...likes[f.id] }} onLike={() => toggleLike(f)} />
+          ),
+        )}
         {items?.length === 0 && <Text style={styles.message}>{t(`feedback.${label}Empty`)}</Text>}
         {!data && !error && <ActivityIndicator color={colors.primary} />}
         {!data && error && (
@@ -314,6 +339,45 @@ function FeedbackCard({ item, onMenu }: { item: Feedback; onMenu?: () => void })
   );
 }
 
+/** Commento di un post: autore e tempo, testo, e a destra il cuore con il contatore (design "Post · Commenti"). */
+function CommentCard({ comment, onLike }: { comment: PostComment; onLike: () => void }) {
+  return (
+    <View style={[styles.card, styles.commentCard]}>
+      <View style={styles.commentText}>
+        <View style={styles.header}>
+          {comment.author.avatar_url ? (
+            <Image source={{ uri: comment.author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Icon sf="person.fill" md="person" size={11} />
+            </View>
+          )}
+          <Text style={styles.commentAuthor} numberOfLines={1}>
+            {comment.author.nickname}
+          </Text>
+          <Text style={styles.time}>{timeAgo(comment.created_at)}</Text>
+        </View>
+        <Text style={styles.commentBody}>{comment.body}</Text>
+      </View>
+      <Pressable
+        onPress={onLike}
+        accessibilityRole="button"
+        accessibilityLabel={t('profile.post.likes', { count: comment.likes_count })}
+        accessibilityState={{ selected: comment.liked }}
+        hitSlop={8}
+        style={styles.commentLike}>
+        <Icon
+          sf={comment.liked ? 'heart.fill' : 'heart'}
+          md="favorite"
+          size={20}
+          tintColor={comment.liked ? colors.danger : reviewColors.author}
+        />
+        <Text style={styles.commentLikes}>{comment.likes_count}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 // Misure e colori del design ("Prodotto · Recensioni" e "· Segnalazioni"); lo sfondo resta quello degli altri formSheet.
 const styles = StyleSheet.create({
   sheet: {
@@ -344,6 +408,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  commentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  commentText: {
+    flex: 1,
+    gap: 6,
+  },
+  commentAuthor: {
+    flexShrink: 1,
+    fontSize: 15,
+    color: reviewColors.author,
+  },
+  commentBody: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: reviewColors.text,
+  },
+  commentLike: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  commentLikes: {
+    fontSize: 13,
+    color: reviewColors.author,
   },
   avatar: {
     width: 20,

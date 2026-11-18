@@ -322,7 +322,6 @@ export const en = {
     draft: 'Draft',
     private: 'Private',
     untitled: 'Untitled',
-    draftUnavailable: "Drafts can't be edited yet.",
     empty: {
       recipes: 'No published recipes',
       saved: 'No saved recipes',

@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
@@ -118,7 +118,7 @@ export default function Profile() {
   );
 }
 
-/** Ricetta della griglia: foto (o fotocamera), icona bozza o lucchetto; le pubblicate aprono il dettaglio. */
+/** Ricetta della griglia: foto (o fotocamera), icona bozza o lucchetto; le pubblicate aprono il dettaglio, le bozze il form. */
 function RecipeTile({ recipe }: { recipe: MyRecipe }) {
   const badge = recipe.is_draft
     ? ({ sf: 'doc.text', md: 'edit_note', label: t('profile.draft') } as const)
@@ -130,7 +130,7 @@ function RecipeTile({ recipe }: { recipe: MyRecipe }) {
     <Pressable
       onPress={() =>
         recipe.is_draft
-          ? Alert.alert(t('profile.draft'), t('profile.draftUnavailable'))
+          ? router.push({ pathname: '/new-recipe', params: { draft: recipe.id } })
           : router.push({ pathname: '/recipe', params: { id: recipe.id } })
       }
       accessibilityRole="button"

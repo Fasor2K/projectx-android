@@ -326,7 +326,6 @@ export const it: typeof en = {
     draft: 'Bozza',
     private: 'Privata',
     untitled: 'Senza nome',
-    draftUnavailable: "Le bozze non si possono ancora modificare.",
     empty: {
       recipes: 'Nessuna ricetta pubblicata',
       saved: 'Nessuna ricetta salvata',

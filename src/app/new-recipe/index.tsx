@@ -1,4 +1,4 @@
-import { router, useNavigation, usePreventRemove } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -15,19 +15,47 @@ import { SelectMenu } from '@/components/select-menu';
 import { formatIngredient, formatPrepTime, type Difficulty } from '@/lib/food';
 import { t } from '@/lib/i18n';
 import { ApiError } from '@/lib/profile';
-import { createRecipe, emptyRecipe, pickRecipePhoto, prepTimes, useRecipeForm } from '@/lib/recipe-form';
+import {
+  emptyRecipe,
+  fetchDraftForm,
+  pickRecipePhoto,
+  prepTimes,
+  saveRecipe,
+  useRecipeForm,
+  type RecipeForm,
+} from '@/lib/recipe-form';
 import { colors, radius, shadow, spacing, typography } from '@/theme';
 
 const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
 const visibilities = ['public', 'private'] as const;
 
-/** Schermata "Aggiungi ricetta" (dal "+"): si pubblica o si salva in bozza con create-recipe. */
+/**
+ * Schermata "Aggiungi ricetta" (dal "+"): si pubblica o si salva in bozza con create-recipe.
+ * Con `draft` (dalla griglia del Profilo) riapre quella bozza e la salva con update-recipe-draft.
+ */
 export default function NewRecipe() {
-  const { form, update } = useRecipeForm();
+  const { draft } = useLocalSearchParams<{ draft?: string }>();
+  const { form, update, reset } = useRecipeForm();
   const navigation = useNavigation();
   const [saving, setSaving] = useState<'publish' | 'draft'>();
   const [saved, setSaved] = useState<{ id: string; published: boolean }>();
-  const dirty = form !== emptyRecipe;
+  // Form di partenza: undefined finché la bozza si carica.
+  const [initial, setInitial] = useState<RecipeForm | undefined>(draft ? undefined : emptyRecipe);
+  const dirty = !!initial && form !== initial;
+
+  useEffect(() => {
+    if (!draft) return;
+    fetchDraftForm(draft).then(
+      (loaded) => {
+        reset(loaded);
+        setInitial(loaded);
+      },
+      () => {
+        Alert.alert(t('authErrors.generic'));
+        router.back();
+      },
+    );
+  }, [draft, reset]);
 
   // Uscire senza salvare perde la ricetta: si chiede conferma (anche con lo swipe indietro).
   usePreventRemove(dirty && !saved, ({ data }) =>
@@ -66,7 +94,7 @@ export default function NewRecipe() {
 
     setSaving(publish ? 'publish' : 'draft');
     try {
-      setSaved(await createRecipe(form, publish));
+      setSaved(await saveRecipe(form, publish, draft));
     } catch (e) {
       const code = e instanceof ApiError ? e.code : undefined;
       const known = code === 'image_too_large' || code === 'ingredient_not_found';
@@ -74,6 +102,15 @@ export default function NewRecipe() {
     } finally {
       setSaving(undefined);
     }
+  }
+
+  if (!initial) {
+    return (
+      <Screen back contentContainerStyle={styles.content}>
+        <BackButtonSpace />
+        <ActivityIndicator color={colors.textSecondary} />
+      </Screen>
+    );
   }
 
   const guideOptions = [null, ...form.ingredients.map((_, i) => i)];

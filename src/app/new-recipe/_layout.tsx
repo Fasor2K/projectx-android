@@ -6,14 +6,14 @@ import { colors } from '@/theme';
 
 const sheet = { presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetGrabberVisible: true } as const;
 
-/** Nuova ricetta: il form e i suoi sheet condividono lo stato, che si perde alla chiusura. */
+/** Nuova ricetta (o bozza riaperta): il form e i suoi sheet condividono lo stato, che si perde alla chiusura. */
 export default function NewRecipeLayout() {
   const [form, setForm] = useState<RecipeForm>(emptyRecipe);
   const [barcode, setBarcode] = useState<string>();
 
   return (
     <RecipeFormContext.Provider
-      value={{ form, update: (changes) => setForm((f) => ({ ...f, ...changes })), barcode, setBarcode }}>
+      value={{ form, update: (changes) => setForm((f) => ({ ...f, ...changes })), reset: setForm, barcode, setBarcode }}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="ingredient" options={{ ...sheet, sheetAllowedDetents: [0.95] }} />

@@ -16,7 +16,8 @@ const GRAMS: Record<IngredientUnit, number> = { g: 1, kg: 1000, ml: 1, l: 1000, 
 export const macroKeys = ['carbs_g', 'fat_g', 'protein_g', 'fiber_g', 'kcal'] as const;
 export type Macros = Record<(typeof macroKeys)[number], number>;
 
-export type Photo = { uri: string; base64: string };
+/** Foto nuova (`base64`) o già salvata nella bozza (solo `uri`, l'URL pubblico). */
+export type Photo = { uri: string; base64?: string };
 
 export type FormIngredient = {
   name: string;
@@ -73,7 +74,61 @@ export function removeIngredient(form: RecipeForm, index: number): Pick<RecipeFo
   return { ingredients: form.ingredients.filter((_, i) => i !== index), guide };
 }
 
-/** Body di create-recipe (vedi ENDPOINTS.md). */
+/** Valori per 100 g ricavati da quelli della quantità (bozze riaperte); zero se il peso è 0 (qb). */
+function per100From(macros: Macros, quantity: number | null, unit: IngredientUnit): Macros {
+  const grams = (quantity ?? 0) * GRAMS[unit];
+  return Object.fromEntries(macroKeys.map((k) => [k, grams > 0 ? (macros[k] * 100) / grams : 0])) as Macros;
+}
+
+/** get-recipe-draft (vedi ENDPOINTS.md). */
+type Draft = {
+  title: string | null;
+  cover_image_url: string | null;
+  servings: number | null;
+  prep_time_minutes: number | null;
+  difficulty: Difficulty | null;
+  visibility: 'public' | 'private';
+  guide_index: number | null;
+  ingredients: (Omit<FormIngredient, 'quantity' | 'per100' | 'macros'> & Macros & { quantity: number | null })[];
+  steps: { body: string; image_url: string | null }[];
+  notes: string[];
+  tags: string[];
+};
+
+/** Bozza dell'utente come form della schermata Nuova ricetta. */
+export async function fetchDraftForm(id: string): Promise<RecipeForm> {
+  const { draft: d } = await invoke<{ draft: Draft }>(`get-recipe-draft?id=${id}`, { method: 'GET' });
+  return {
+    cover: d.cover_image_url ? { uri: d.cover_image_url } : null,
+    title: d.title ?? '',
+    ingredients: d.ingredients.map(({ name, product_id, source_recipe_id, quantity, unit, ...rest }) => {
+      const macros = Object.fromEntries(macroKeys.map((k) => [k, rest[k]])) as Macros;
+      return {
+        name,
+        product_id,
+        source_recipe_id,
+        quantity: quantity === null ? '' : String(quantity),
+        unit,
+        per100: per100From(macros, quantity, unit),
+        macros,
+      };
+    }),
+    guide: d.guide_index,
+    servings: String(d.servings ?? 0),
+    prepMinutes: d.prep_time_minutes,
+    difficulty: d.difficulty ?? undefined,
+    steps: d.steps.map((s) => ({ body: s.body, photo: s.image_url ? { uri: s.image_url } : null })),
+    notes: d.notes,
+    tags: d.tags,
+    visibility: d.visibility,
+  };
+}
+
+/** Foto per il body: nuova in base64, già salvata come URL. */
+const photoFields = (photo: Photo | null, prefix: 'cover_image' | 'image') =>
+  photo?.base64 ? { [`${prefix}_base64`]: photo.base64 } : photo ? { [`${prefix}_url`]: photo.uri } : {};
+
+/** Body di create-recipe e update-recipe-draft (vedi ENDPOINTS.md). */
 export function recipeBody(form: RecipeForm, publish: boolean) {
   const servings = Number(form.servings);
   return {
@@ -83,21 +138,25 @@ export function recipeBody(form: RecipeForm, publish: boolean) {
     prep_time_minutes: form.prepMinutes,
     difficulty: form.difficulty ?? null,
     visibility: form.visibility,
-    cover_image_base64: form.cover?.base64,
+    ...photoFields(form.cover, 'cover_image'),
     guide_index: form.guide,
     ingredients: form.ingredients.map(({ per100: _per100, quantity, macros, ...i }) => ({
       ...i,
       ...macros,
       quantity: i.unit === 'to_taste' ? null : Number(quantity.replace(',', '.')),
     })),
-    steps: form.steps.map((s) => ({ body: s.body, image_base64: s.photo?.base64 })),
+    steps: form.steps.map((s) => ({ body: s.body, ...photoFields(s.photo, 'image') })),
     notes: form.notes,
     tags: form.tags,
   };
 }
 
-export const createRecipe = (form: RecipeForm, publish: boolean) =>
-  invoke<{ id: string; published: boolean }>('create-recipe', { method: 'POST', body: recipeBody(form, publish) });
+/** Crea la ricetta, o riscrive la bozza `draftId`. */
+export const saveRecipe = (form: RecipeForm, publish: boolean, draftId?: string) =>
+  invoke<{ id: string; published: boolean }>(draftId ? 'update-recipe-draft' : 'create-recipe', {
+    method: 'POST',
+    body: { ...recipeBody(form, publish), ...(draftId && { id: draftId }) },
+  });
 
 const PHOTO_WIDTH_PX = 1080;
 
@@ -110,13 +169,15 @@ export async function pickRecipePhoto(aspect?: [number, number]): Promise<Photo 
   return { uri: saved.uri, base64: saved.base64! };
 }
 
-/** Form della nuova ricetta, condiviso tra la schermata e i suoi sheet (layout `new-recipe`). */
+/** Form della nuova ricetta (o della bozza riaperta), condiviso tra la schermata e i suoi sheet (layout `new-recipe`). */
 export const RecipeFormContext = createContext<{
   form: RecipeForm;
   update: (changes: Partial<RecipeForm>) => void;
+  /** Sostituisce tutto il form (bozza riaperta). */
+  reset: (form: RecipeForm) => void;
   /** Codice letto dallo scanner dell'ingrediente, consumato dallo sheet Aggiungi ingrediente. */
   barcode: string | undefined;
   setBarcode: (barcode: string | undefined) => void;
-}>({ form: emptyRecipe, update: () => {}, barcode: undefined, setBarcode: () => {} });
+}>({ form: emptyRecipe, update: () => {}, reset: () => {}, barcode: undefined, setBarcode: () => {} });
 
 export const useRecipeForm = () => useContext(RecipeFormContext);

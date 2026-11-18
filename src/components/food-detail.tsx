@@ -172,10 +172,20 @@ export function PortionNutrition({
   );
 }
 
-/** Pulsanti verso commenti o recensioni e segnalazioni, con i conteggi. */
-export function FeedbackLinks({ food, reviewCount, reportCount }: { food: FoodRef; reviewCount: number; reportCount: number }) {
-  const reviews = 'recipe_id' in food ? 'foodDetail.comments' : 'foodDetail.reviews';
-  const open = (kind: 'review' | 'report') => router.push({ pathname: '/feedback', params: { ...food, kind } });
+/** Pulsanti verso recensioni e segnalazioni, con i conteggi. `own`: ricetta dell'utente, che non può aggiungerne. */
+export function FeedbackLinks({
+  food,
+  reviewCount,
+  reportCount,
+  own,
+}: {
+  food: FoodRef;
+  reviewCount: number;
+  reportCount: number;
+  own?: boolean;
+}) {
+  const open = (kind: 'review' | 'report') =>
+    router.push({ pathname: '/feedback', params: { ...food, kind, ...(own && { own: '1' }) } });
 
   return (
     <Card>
@@ -183,7 +193,7 @@ export function FeedbackLinks({ food, reviewCount, reportCount }: { food: FoodRe
         {t('foodDetail.feedbackTitle')}
       </Text>
       <View style={styles.links}>
-        <LinkButton label={t(reviews, { count: reviewCount })} onPress={() => open('review')} />
+        <LinkButton label={t('foodDetail.reviews', { count: reviewCount })} onPress={() => open('review')} />
         <LinkButton label={t('foodDetail.reports', { count: reportCount })} onPress={() => open('report')} />
       </View>
     </Card>

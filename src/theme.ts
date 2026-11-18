@@ -26,7 +26,7 @@ export const colors = {
   backgroundBottom: '#C4D3F1',
 } as const;
 
-/** Sheet Commenti / Recensioni: colori presi dal design (richiesto di seguirlo alla lettera). */
+/** Sheet Recensioni / Segnalazioni: colori presi dal design (richiesto di seguirlo alla lettera). */
 export const reviewColors = {
   title: '#1A1A1A',
   author: '#6E6E73',

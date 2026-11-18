@@ -29,7 +29,7 @@ type IngredientsView = 'recipe' | 'mine';
 
 /**
  * Dettaglio ricetta: autore e Segui, bilancio nutrizionale e ingredienti ricalcolati sulla quantità scelta
- * ("mia porzione"), procedimento, note, categorie, commenti e segnalazioni, Aggiungi a pasto.
+ * ("mia porzione"), procedimento, note, categorie, recensioni e segnalazioni, Aggiungi a pasto.
  * Sulle proprie ricette, accanto ad Aggiungi a pasto: modifica (riapre Nuova ricetta) ed elimina.
  */
 export default function RecipeScreen() {
@@ -238,7 +238,12 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
         </Card>
       )}
 
-      <FeedbackLinks food={{ recipe_id: r.id }} reviewCount={r.review_count} reportCount={r.report_count} />
+      <FeedbackLinks
+        food={{ recipe_id: r.id }}
+        reviewCount={r.review_count}
+        reportCount={r.report_count}
+        own={r.is_mine}
+      />
     </DetailLayout>
   );
 }

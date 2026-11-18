@@ -41,7 +41,7 @@ const MAX_TEXT = 1000;
 const STARS = [1, 2, 3, 4, 5];
 
 /**
- * Sheet "Commenti" (ricette) / "Recensioni" (prodotti) con le stelle, o "Segnalazioni" senza, come nel design:
+ * Sheet "Recensioni" con le stelle, o "Segnalazioni" senza, come nel design:
  * elenco e campo in fondo. Uno per utente e tipo: il proprio sta in cima e si modifica o elimina dal suo menu.
  * Con `post_id` sono i commenti di un post: quanti se ne vuole, senza stelle né menu, con il cuore a destra.
  */
@@ -51,12 +51,13 @@ export default function FeedbackSheet() {
     product_id?: string;
     kind?: FeedbackKind;
     post_id?: string;
+    own?: string;
   }>();
   const postId = params.post_id;
   const food: FoodRef = params.recipe_id ? { recipe_id: params.recipe_id } : { product_id: params.product_id! };
   const kind: FeedbackKind = params.kind === 'report' ? 'report' : 'review';
   const review = !postId && kind === 'review';
-  const label = postId || (review && 'recipe_id' in food) ? 'comments' : review ? 'reviews' : 'reports';
+  const label = postId ? 'comments' : review ? 'reviews' : 'reports';
   const insets = useSafeAreaInsets();
 
   // Android impagina il formSheet sul detent più alto (0.95 in _layout): al primo (0.6) il fondo resta fuori
@@ -196,8 +197,8 @@ export default function FeedbackSheet() {
     ]);
   }
 
-  // Chi ha già il suo vede il campo solo mentre lo modifica.
-  const showInput = data && (!mine || editing);
+  // Chi ha già il suo vede il campo solo mentre lo modifica; l'autore della ricetta non ne aggiunge (own_recipe).
+  const showInput = data && (editing || (!mine && !params.own));
 
   return (
     <KeyboardAvoidingView

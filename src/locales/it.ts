@@ -52,6 +52,10 @@ export const it: typeof en = {
     kcal: '%{value} kcal',
   },
   foodDetail: {
+    edit: 'Modifica ricetta',
+    delete: 'Elimina ricetta',
+    deleteTitle: 'Eliminare la ricetta?',
+    deleteMessage: 'La ricetta, le sue foto, i commenti e le segnalazioni verranno eliminati. Le voci del diario mantengono i loro valori. Non si può annullare.',
     loadFailed: 'Non riusciamo a caricare questa pagina.',
     notFound: 'Questo elemento non è più disponibile.',
     info: 'Informazioni su %{title}',
@@ -220,6 +224,9 @@ export const it: typeof en = {
     discardTitle: 'Eliminare la ricetta?',
     discardMessage: 'La ricetta non è stata salvata: se esci andrà persa.',
     discard: 'Elimina',
+    deleteDraft: 'Elimina bozza',
+    deleteDraftTitle: 'Eliminare la bozza?',
+    deleteDraftMessage: 'La bozza e le sue foto verranno eliminate. Non si può annullare.',
     missingTitle: 'Controlla la ricetta',
     errors: {
       title: 'Inserisci il nome della ricetta.',

@@ -88,6 +88,7 @@ type Draft = {
   prep_time_minutes: number | null;
   difficulty: Difficulty | null;
   visibility: 'public' | 'private';
+  published: boolean;
   guide_index: number | null;
   ingredients: (Omit<FormIngredient, 'quantity' | 'per100' | 'macros'> & Macros & { quantity: number | null })[];
   steps: { body: string; image_url: string | null }[];
@@ -95,10 +96,10 @@ type Draft = {
   tags: string[];
 };
 
-/** Bozza dell'utente come form della schermata Nuova ricetta. */
-export async function fetchDraftForm(id: string): Promise<RecipeForm> {
+/** Ricetta dell'utente (bozza o pubblicata) come form della schermata Nuova ricetta. */
+export async function fetchDraftForm(id: string): Promise<{ form: RecipeForm; published: boolean }> {
   const { draft: d } = await invoke<{ draft: Draft }>(`get-recipe-draft?id=${id}`, { method: 'GET' });
-  return {
+  const form: RecipeForm = {
     cover: d.cover_image_url ? { uri: d.cover_image_url } : null,
     title: d.title ?? '',
     ingredients: d.ingredients.map(({ name, product_id, source_recipe_id, quantity, unit, ...rest }) => {
@@ -122,6 +123,7 @@ export async function fetchDraftForm(id: string): Promise<RecipeForm> {
     tags: d.tags,
     visibility: d.visibility,
   };
+  return { form, published: d.published };
 }
 
 /** Foto per il body: nuova in base64, già salvata come URL. */
@@ -151,7 +153,10 @@ export function recipeBody(form: RecipeForm, publish: boolean) {
   };
 }
 
-/** Crea la ricetta, o riscrive la bozza `draftId`. */
+/** Elimina una ricetta dell'utente, bozza o pubblicata. */
+export const deleteRecipe = (id: string) => invoke<{ deleted: true }>('delete-recipe-draft', { method: 'POST', body: { id } });
+
+/** Crea la ricetta, o riscrive la ricetta dell'utente `draftId` (bozza o pubblicata). */
 export const saveRecipe = (form: RecipeForm, publish: boolean, draftId?: string) =>
   invoke<{ id: string; published: boolean }>(draftId ? 'update-recipe-draft' : 'create-recipe', {
     method: 'POST',

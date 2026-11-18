@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -15,12 +15,14 @@ import {
   Rating,
   useFocusData,
 } from '@/components/food-detail';
+import { GlassSurface } from '@/components/glass-surface';
 import { Icon } from '@/components/icon';
 import { defaultQuantity, isValidQuantity, parseQuantity } from '@/components/quantity-field';
 import { SegmentedControl } from '@/components/segmented-control';
 import { scaleNutrition, type Food, type QuantityMode } from '@/lib/diary';
 import { fetchRecipe, followUser, formatIngredient, formatPrepTime, portionFactor, servingInfo, type RecipeDetail } from '@/lib/food';
 import { t } from '@/lib/i18n';
+import { deleteRecipe } from '@/lib/recipe-form';
 import { colors, radius, spacing, typography } from '@/theme';
 
 type IngredientsView = 'recipe' | 'mine';
@@ -28,6 +30,7 @@ type IngredientsView = 'recipe' | 'mine';
 /**
  * Dettaglio ricetta: autore e Segui, bilancio nutrizionale e ingredienti ricalcolati sulla quantità scelta
  * ("mia porzione"), procedimento, note, categorie, commenti e segnalazioni, Aggiungi a pasto.
+ * Sulle proprie ricette, accanto ad Aggiungi a pasto: modifica (riapre Nuova ricetta) ed elimina.
  */
 export default function RecipeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,6 +54,7 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
   const [mode, setMode] = useState<QuantityMode>(modes[0]);
   const [quantity, setQuantity] = useState(defaultQuantity(modes[0]));
   const [view, setView] = useState<IngredientsView>('recipe');
+  const [deleting, setDeleting] = useState(false);
 
   const amount = parseQuantity(quantity);
   const valid = isValidQuantity(amount);
@@ -60,20 +64,56 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
   const amountLabel =
     mode === 'grams' ? t('diary.grams', { value: quantity }) : t('diary.servings', { count: amount, value: quantity });
 
+  function confirmDelete() {
+    Alert.alert(t('foodDetail.deleteTitle'), t('foodDetail.deleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('foodDetail.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          setDeleting(true);
+          try {
+            await deleteRecipe(r.id);
+            router.back();
+          } catch {
+            setDeleting(false);
+            Alert.alert(t('authErrors.generic'));
+          }
+        },
+      },
+    ]);
+  }
+
   return (
     <DetailLayout
       footer={
-        <Button
-          title={t('diary.item.addTitle')}
-          icon={{ sf: 'plus', md: 'add' }}
-          disabled={!valid}
-          onPress={() =>
-            router.push({
-              pathname: '/meal-item',
-              params: { recipe_id: r.id, quantity, mode, guide: r.guide_ingredient_id ? '1' : '' },
-            })
-          }
-        />
+        <View style={styles.row}>
+          {r.is_mine && (
+            <>
+              <RoundButton
+                label={t('foodDetail.edit')}
+                onPress={() => router.push({ pathname: '/new-recipe', params: { draft: r.id } })}
+                disabled={deleting}>
+                <Icon sf="pencil" md="edit" tintColor={colors.text} />
+              </RoundButton>
+              <RoundButton label={t('foodDetail.delete')} onPress={confirmDelete} disabled={deleting} busy={deleting}>
+                {deleting ? <ActivityIndicator color={colors.text} /> : <Icon sf="trash" md="delete" tintColor={colors.danger} />}
+              </RoundButton>
+            </>
+          )}
+          <Button
+            title={t('diary.item.addTitle')}
+            icon={{ sf: 'plus', md: 'add' }}
+            disabled={!valid || deleting}
+            style={styles.grow}
+            onPress={() =>
+              router.push({
+                pathname: '/meal-item',
+                params: { recipe_id: r.id, quantity, mode, guide: r.guide_ingredient_id ? '1' : '' },
+              })
+            }
+          />
+        </View>
       }>
       <Cover uri={r.cover_image_url} />
       <View style={styles.heading}>
@@ -203,6 +243,35 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
   );
 }
 
+/** Pulsante tondo in vetro (Liquid Glass su iOS 26+), come quelli dell'header di Nuova ricetta. */
+function RoundButton({
+  label,
+  onPress,
+  disabled,
+  busy,
+  children,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  busy?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled, busy }}
+      hitSlop={spacing.xs}>
+      <GlassSurface interactive style={styles.roundButton}>
+        {children}
+      </GlassSurface>
+    </Pressable>
+  );
+}
+
 /** Autore con foto e "Segui" / "Segui già"; per le proprie ricette niente pulsante. */
 function Author({ recipe: r }: { recipe: RecipeDetail }) {
   const [following, setFollowing] = useState(!!r.author?.is_following);
@@ -273,6 +342,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  // Alto come Button (minHeight 54).
+  roundButton: {
+    width: 54,
+    height: 54,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     width: 32,

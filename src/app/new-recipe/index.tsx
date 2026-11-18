@@ -16,6 +16,7 @@ import { formatIngredient, formatPrepTime, type Difficulty } from '@/lib/food';
 import { t } from '@/lib/i18n';
 import { ApiError } from '@/lib/profile';
 import {
+  deleteRecipe,
   emptyRecipe,
   fetchDraftForm,
   pickRecipePhoto,
@@ -31,14 +32,17 @@ const visibilities = ['public', 'private'] as const;
 
 /**
  * Schermata "Aggiungi ricetta" (dal "+"): si pubblica o si salva in bozza con create-recipe.
- * Con `draft` (dalla griglia del Profilo) riapre quella bozza e la salva con update-recipe-draft.
+ * Con `draft` riapre una ricetta dell'utente e la salva con update-recipe-draft: una bozza (dalla griglia del Profilo)
+ * o una pubblicata (dalla matita del Dettaglio ricetta), che resta pubblicata: solo "Salva", si torna al dettaglio.
  */
 export default function NewRecipe() {
   const { draft } = useLocalSearchParams<{ draft?: string }>();
   const { form, update, reset } = useRecipeForm();
   const navigation = useNavigation();
-  const [saving, setSaving] = useState<'publish' | 'draft'>();
+  const [saving, setSaving] = useState<'publish' | 'draft' | 'delete'>();
   const [saved, setSaved] = useState<{ id: string; published: boolean }>();
+  const [deleted, setDeleted] = useState(false);
+  const [published, setPublished] = useState(false);
   // Form di partenza: undefined finché la bozza si carica.
   const [initial, setInitial] = useState<RecipeForm | undefined>(draft ? undefined : emptyRecipe);
   const dirty = !!initial && form !== initial;
@@ -47,8 +51,9 @@ export default function NewRecipe() {
     if (!draft) return;
     fetchDraftForm(draft).then(
       (loaded) => {
-        reset(loaded);
-        setInitial(loaded);
+        reset(loaded.form);
+        setInitial(loaded.form);
+        setPublished(loaded.published);
       },
       () => {
         Alert.alert(t('authErrors.generic'));
@@ -58,7 +63,7 @@ export default function NewRecipe() {
   }, [draft, reset]);
 
   // Uscire senza salvare perde la ricetta: si chiede conferma (anche con lo swipe indietro).
-  usePreventRemove(dirty && !saved, ({ data }) =>
+  usePreventRemove(dirty && !saved && !deleted, ({ data }) =>
     Alert.alert(t('newRecipe.discardTitle'), t('newRecipe.discardMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('newRecipe.discard'), style: 'destructive', onPress: () => navigation.dispatch(data.action) },
@@ -68,12 +73,39 @@ export default function NewRecipe() {
   // Dopo il salvataggio, quando usePreventRemove non blocca più l'uscita: pubblicata → dettaglio, bozza → Profilo.
   useEffect(() => {
     if (!saved) return;
-    if (saved.published) router.replace({ pathname: '/recipe', params: { id: saved.id } });
+    if (published) router.back();
+    else if (saved.published) router.replace({ pathname: '/recipe', params: { id: saved.id } });
     else {
       router.dismissTo('/profile');
       Alert.alert(t('newRecipe.draftSaved'));
     }
-  }, [saved]);
+  }, [saved, published]);
+
+  // Come dopo il salvataggio: si esce quando usePreventRemove non blocca più.
+  useEffect(() => {
+    if (deleted) router.dismissTo('/profile');
+  }, [deleted]);
+
+  function confirmDelete() {
+    Alert.alert(t('newRecipe.deleteDraftTitle'), t('newRecipe.deleteDraftMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('newRecipe.deleteDraft'),
+        style: 'destructive',
+        onPress: async () => {
+          setSaving('delete');
+          try {
+            await deleteRecipe(draft!);
+            setDeleted(true);
+          } catch {
+            Alert.alert(t('authErrors.generic'));
+          } finally {
+            setSaving(undefined);
+          }
+        },
+      },
+    ]);
+  }
 
   async function submit(publish: boolean) {
     const servingsText = form.servings.trim();
@@ -121,6 +153,24 @@ export default function NewRecipe() {
       contentContainerStyle={styles.content}
       headerRight={
         <>
+          {draft && !published && (
+            <Pressable
+              onPress={confirmDelete}
+              disabled={!!saving}
+              accessibilityRole="button"
+              accessibilityLabel={t('newRecipe.deleteDraft')}
+              accessibilityState={{ busy: saving === 'delete' }}
+              hitSlop={spacing.xs}>
+              <GlassSurface interactive style={styles.draftButton}>
+                {saving === 'delete' ? (
+                  <ActivityIndicator color={colors.text} />
+                ) : (
+                  <Icon sf="trash" md="delete" tintColor={colors.danger} />
+                )}
+              </GlassSurface>
+            </Pressable>
+          )}
+          {!published && (
           <Pressable
             onPress={() => submit(false)}
             disabled={!!saving}
@@ -136,8 +186,9 @@ export default function NewRecipe() {
               )}
             </GlassSurface>
           </Pressable>
+          )}
           <Button
-            title={t('newRecipe.publish')}
+            title={t(published ? 'newRecipe.save' : 'newRecipe.publish')}
             onPress={() => submit(true)}
             loading={saving === 'publish'}
             disabled={!!saving}

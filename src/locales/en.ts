@@ -51,6 +51,10 @@ export const en = {
     kcal: '%{value} kcal',
   },
   foodDetail: {
+    edit: 'Edit recipe',
+    delete: 'Delete recipe',
+    deleteTitle: 'Delete the recipe?',
+    deleteMessage: 'The recipe, its photos, comments and reports will be deleted. Diary entries keep their values. This cannot be undone.',
     loadFailed: "We couldn't load this page.",
     notFound: 'This item is no longer available.',
     info: 'About %{title}',
@@ -216,6 +220,9 @@ export const en = {
     discardTitle: 'Discard the recipe?',
     discardMessage: 'The recipe has not been saved: if you leave, it will be lost.',
     discard: 'Discard',
+    deleteDraft: 'Delete draft',
+    deleteDraftTitle: 'Delete the draft?',
+    deleteDraftMessage: 'The draft and its photos will be deleted. This cannot be undone.',
     missingTitle: 'Check the recipe',
     errors: {
       title: 'Enter the recipe name.',

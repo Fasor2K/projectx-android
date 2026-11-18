@@ -71,6 +71,20 @@ export type MyRecipe = {
 
 export const fetchMyRecipes = async () =>
   (await invoke<{ recipes: MyRecipe[] }>('get-my-recipes', { method: 'GET' })).recipes;
+/** get-my-posts: post dell'utente per la sezione "Post" del Profilo. community null = Generale. */
+export type MyPost = {
+  id: string;
+  body: string;
+  image_url: string | null;
+  community: Community | null;
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+  liked: boolean;
+};
+
+export const fetchMyPosts = async () => (await invoke<{ posts: MyPost[] }>('get-my-posts', { method: 'GET' })).posts;
+export const deletePost = (id: string) => invoke<{ deleted: true }>('edit-post', { method: 'POST', body: { id, delete: true } });
 export const fetchProfileStats = async () =>
   (await invoke<{ stats: ProfileStats }>('get-profile-stats', { method: 'GET' })).stats;
 export const updateNickname = async (nickname: string) =>

@@ -1,4 +1,4 @@
-import { router, useNavigation, usePreventRemove } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -14,21 +14,35 @@ import { colors, radius, spacing, typography } from '@/theme';
 const BODY_MAX = 1000;
 const AVATAR_SIZE = 36;
 
-/** Nuovo post (dal "+"): testo, foto facoltativa e visibilità tra le community dell'utente e Generale (create-post). */
+/** Parametri della modifica, dal menu "…" dei post nel Profilo; senza `id` è un nuovo post. community '' = Generale. */
+type EditParams = { id?: string; body?: string; community?: Community | ''; image_url?: string };
+
+/**
+ * Nuovo post (dal "+"): testo, foto facoltativa e visibilità tra le community dell'utente e Generale (create-post).
+ * Con `id` modifica un post esistente (edit-post): stessi campi precompilati, "Salva" al posto di "Pubblica".
+ */
 export default function NewPost() {
   const { profile } = useProfile();
   const navigation = useNavigation();
-  const [body, setBody] = useState('');
-  const [photo, setPhoto] = useState<Photo | null>(null);
+  const params = useLocalSearchParams<EditParams>();
+  const editing = !!params.id;
+  const initialCommunity = params.community || null;
+  const [body, setBody] = useState(params.body ?? '');
+  // Foto già pubblicata: solo uri, senza base64 (non si ricarica se non cambia).
+  const [photo, setPhoto] = useState<Photo | null>(params.image_url ? { uri: params.image_url } : null);
   // null = Generale. Chi non ha community non vede la scelta e pubblica sempre in Generale.
-  const [community, setCommunity] = useState<Community | null>(null);
+  const [community, setCommunity] = useState<Community | null>(initialCommunity);
   const [saving, setSaving] = useState(false);
   const [published, setPublished] = useState(false);
   const communities = profile?.communities ?? [];
 
-  // Uscire senza pubblicare perde il post: si chiede conferma (anche con lo swipe indietro).
-  usePreventRemove(!published && (!!body.trim() || !!photo), ({ data }) =>
-    Alert.alert(t('newPost.discardTitle'), t('newPost.discardMessage'), [
+  const dirty = editing
+    ? body !== params.body || !!photo?.base64 || community !== initialCommunity
+    : !!body.trim() || !!photo;
+
+  // Uscire senza pubblicare perde il post (o le modifiche): si chiede conferma (anche con lo swipe indietro).
+  usePreventRemove(!published && dirty, ({ data }) =>
+    Alert.alert(t(editing ? 'newPost.discardEditTitle' : 'newPost.discardTitle'), t(editing ? 'newPost.discardEditMessage' : 'newPost.discardMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('newPost.discard'), style: 'destructive', onPress: () => navigation.dispatch(data.action) },
     ]),
@@ -38,16 +52,16 @@ export default function NewPost() {
   useEffect(() => {
     if (!published) return;
     router.back();
-    Alert.alert(t('newPost.published'));
-  }, [published]);
+    Alert.alert(t(editing ? 'newPost.saved' : 'newPost.published'));
+  }, [published, editing]);
 
   async function publish() {
     if (!body.trim()) return Alert.alert(t('newPost.emptyTitle'), t('newPost.emptyMessage'));
     setSaving(true);
     try {
-      await invoke<{ id: string }>('create-post', {
+      await invoke<{ id: string }>(editing ? 'edit-post' : 'create-post', {
         method: 'POST',
-        body: { body: body.trim(), community, image_base64: photo?.base64 },
+        body: { id: params.id, body: body.trim(), community, image_base64: photo?.base64 },
       });
       setPublished(true);
     } catch (e) {
@@ -63,12 +77,12 @@ export default function NewPost() {
       back
       contentContainerStyle={styles.content}
       headerRight={
-        <Button title={t('newPost.publish')} onPress={publish} loading={saving} disabled={saving} style={styles.publish} />
+        <Button title={t(editing ? 'newPost.save' : 'newPost.publish')} onPress={publish} loading={saving} disabled={saving} style={styles.publish} />
       }>
       {/* Alla stessa altezza dell'indietro e di "Pubblica", fissi sopra. */}
       <View style={styles.titleRow}>
         <Text style={typography.title} accessibilityRole="header">
-          {t('newPost.title')}
+          {t(editing ? 'newPost.editTitle' : 'newPost.title')}
         </Text>
       </View>
 

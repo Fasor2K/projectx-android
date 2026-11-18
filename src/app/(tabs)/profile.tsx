@@ -1,26 +1,39 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
 import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { SegmentedControl } from '@/components/segmented-control';
+import { timeAgo } from '@/lib/food';
 import { i18n, t } from '@/lib/i18n';
-import { fetchMyRecipes, fetchProfileStats, useProfile, type MyRecipe, type ProfileStats } from '@/lib/profile';
+import {
+  deletePost,
+  fetchMyPosts,
+  fetchMyRecipes,
+  fetchProfileStats,
+  useProfile,
+  type MyPost,
+  type MyRecipe,
+  type Profile as ProfileData,
+  type ProfileStats,
+} from '@/lib/profile';
 import { colors, radius, spacing, typography } from '@/theme';
 
 const AVATAR_SIZE = 96;
+const POST_AVATAR_SIZE = 36;
 
 const sections = ['recipes', 'saved', 'posts'] as const;
 type Section = (typeof sections)[number];
 
-/** Profilo dell'utente loggato. "Ricette salvate" e "Post" non sono ancora collegati: solo empty state. */
+/** Profilo dell'utente loggato. "Ricette salvate" non è ancora collegata: solo empty state. */
 export default function Profile() {
   const { profile } = useProfile();
   const [stats, setStats] = useState<ProfileStats>();
   const [recipes, setRecipes] = useState<MyRecipe[]>();
+  const [posts, setPosts] = useState<MyPost[]>();
   const [section, setSection] = useState<Section>('recipes');
 
   // Ricaricati a ogni ritorno sul tab: i contatori cambiano da altre schermate.
@@ -28,6 +41,7 @@ export default function Profile() {
     useCallback(() => {
       fetchProfileStats().then(setStats, () => {});
       fetchMyRecipes().then(setRecipes, () => {});
+      fetchMyPosts().then(setPosts, () => {});
     }, []),
   );
 
@@ -109,6 +123,17 @@ export default function Profile() {
             <RecipeTile key={recipe.id} recipe={recipe} />
           ))}
         </View>
+      ) : section === 'posts' && posts?.length ? (
+        <View style={styles.posts}>
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              author={profile}
+              onDeleted={() => setPosts((list) => list?.filter((p) => p.id !== post.id))}
+            />
+          ))}
+        </View>
       ) : (
         <View style={styles.empty}>
           <Text style={typography.title}>{t(`profile.empty.${section}`)}</Text>
@@ -147,6 +172,91 @@ function RecipeTile({ recipe }: { recipe: MyRecipe }) {
         </View>
       )}
     </Pressable>
+  );
+}
+
+/** Post del Profilo: autore, tempo e visibilità, testo, foto, Mi piace e commenti (solo contatori), condividi e menu "…". */
+function PostCard({ post, author, onDeleted }: { post: MyPost; author: ProfileData; onDeleted: () => void }) {
+  const general = post.community === null;
+
+  function confirmDelete() {
+    Alert.alert(t('profile.post.deleteTitle'), t('profile.post.deleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('profile.post.delete'),
+        style: 'destructive',
+        onPress: () => deletePost(post.id).then(onDeleted, () => Alert.alert(t('profile.post.deleteFailed'), t('authErrors.generic'))),
+      },
+    ]);
+  }
+
+  function openMenu() {
+    Alert.alert(t('profile.post.menu'), undefined, [
+      {
+        text: t('profile.post.edit'),
+        onPress: () =>
+          router.push({
+            pathname: '/new-post',
+            params: { id: post.id, body: post.body, community: post.community ?? '', image_url: post.image_url ?? '' },
+          }),
+      },
+      { text: t('profile.post.delete'), style: 'destructive', onPress: confirmDelete },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  }
+
+  return (
+    <Card>
+      <View style={styles.postHeader}>
+        <View style={styles.postAvatar}>
+          {author.avatar_url ? (
+            <Image source={{ uri: author.avatar_url }} style={StyleSheet.absoluteFill} />
+          ) : (
+            <Icon sf="person.fill" md="person" size={20} tintColor={colors.textMuted} />
+          )}
+        </View>
+        <View style={styles.postAuthor}>
+          <Text style={styles.postNickname}>{author.nickname}</Text>
+          <View style={styles.postMeta}>
+            <Text style={typography.caption}>{timeAgo(post.created_at)} • </Text>
+            <Icon sf={general ? 'globe' : 'lock'} md={general ? 'public' : 'lock'} size={12} tintColor={colors.textSecondary} />
+            <Text style={typography.caption}>
+              {t(general ? 'newPost.general' : `profileSetup.communities.${post.community}`)}
+            </Text>
+          </View>
+        </View>
+        <Pressable onPress={openMenu} accessibilityRole="button" accessibilityLabel={t('profile.post.more')} hitSlop={spacing.md}>
+          <Icon sf="ellipsis" md="more_horiz" size={20} tintColor={colors.text} />
+        </Pressable>
+      </View>
+
+      <Text style={styles.postBody}>{post.body}</Text>
+      {post.image_url && <Image source={{ uri: post.image_url }} style={styles.postImage} accessibilityIgnoresInvertColors />}
+
+      <View style={styles.postActions}>
+        <View style={styles.postCount} accessible accessibilityLabel={t('profile.post.likes', { count: post.likes_count })}>
+          <Icon
+            sf={post.liked ? 'heart.fill' : 'heart'}
+            md="favorite"
+            size={22}
+            tintColor={post.liked ? colors.danger : colors.textSecondary}
+          />
+          <Text style={typography.caption}>{post.likes_count}</Text>
+        </View>
+        <View style={styles.postCount} accessible accessibilityLabel={t('profile.post.comments', { count: post.comments_count })}>
+          <Icon sf="bubble.left" md="chat_bubble" size={20} tintColor={colors.textSecondary} />
+          <Text style={typography.caption}>{post.comments_count}</Text>
+        </View>
+        <Pressable
+          onPress={() => Share.share({ message: post.body })}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.post.share')}
+          hitSlop={spacing.md}
+          style={styles.postShare}>
+          <Icon sf="paperplane" md="send" size={20} tintColor={colors.textSecondary} />
+        </Pressable>
+      </View>
+    </Card>
   );
 }
 
@@ -254,6 +364,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.sm,
     backgroundColor: colors.surface,
+  },
+  posts: {
+    gap: spacing.lg,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  postAvatar: {
+    width: POST_AVATAR_SIZE,
+    height: POST_AVATAR_SIZE,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primarySoft,
+    overflow: 'hidden',
+  },
+  postAuthor: {
+    flex: 1,
+  },
+  postNickname: {
+    ...typography.label,
+    fontSize: 15,
+    fontWeight: '400',
+  },
+  postMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  postBody: {
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 23,
+    color: colors.text,
+  },
+  postImage: {
+    width: '100%',
+    aspectRatio: 2,
+    borderRadius: radius.md,
+  },
+  postActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xl,
+  },
+  postCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  postShare: {
+    marginLeft: 'auto',
   },
   empty: {
     flex: 1,

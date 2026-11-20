@@ -58,7 +58,7 @@ export default function CompleteProfile() {
     <Screen back={editing} contentContainerStyle={styles.content}>
       {editing && <BackButtonSpace />}
       <View style={styles.header}>
-        <Text style={typography.display} accessibilityRole="header">
+        <Text style={typography.screenTitle} accessibilityRole="header">
           {t(editing ? 'profileSetup.editTitle' : 'profileSetup.title')}
         </Text>
         <Text style={typography.body}>{t('profileSetup.subtitle')}</Text>

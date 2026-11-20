@@ -1,4 +1,5 @@
 // Design tokens di Foodity: colori, raggi, spaziature e testi condivisi da tutte le schermate.
+import { Platform } from 'react-native';
 
 export const colors = {
   primary: '#1B6FE3',
@@ -63,10 +64,15 @@ export const spacing = {
   xxl: 32,
 } as const;
 
+/** Spazio occupato dalla tab bar sopra l'inset inferiore. */
+export const tabBarHeight = Platform.OS === 'ios' ? 64 : 80;
+
 export const typography = {
   brand: { fontSize: 22, fontWeight: '700', color: colors.text },
   eyebrow: { fontSize: 13, fontWeight: '700', letterSpacing: 1, color: colors.primary },
   display: { fontSize: 30, fontWeight: '400', letterSpacing: -0.6, color: colors.text },
+  /** Titolo delle schermate principali (Home, Cerca, Diario). */
+  screenTitle: { fontSize: 30, fontWeight: '700', letterSpacing: -0.6, color: colors.text },
   title: { fontSize: 17, fontWeight: '700', color: colors.text },
   body: { fontSize: 15, color: colors.textSecondary, lineHeight: 22 },
   label: { fontSize: 13, fontWeight: '600', color: colors.text },

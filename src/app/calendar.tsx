@@ -26,9 +26,6 @@ export default function Calendar() {
     <Screen back contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <BackButtonSpace />
-        <Text style={styles.title} accessibilityRole="header">
-          {t('diary.calendar')}
-        </Text>
         {diabetic && (
           <Pressable
             onPress={() => router.push({ pathname: '/glucose-insulin', params: { day } })}
@@ -41,6 +38,9 @@ export default function Calendar() {
           </Pressable>
         )}
       </View>
+      <Text style={styles.title} accessibilityRole="header">
+        {t('diary.calendar')}
+      </Text>
 
       <Card>
         {Platform.OS === 'ios' ? (
@@ -77,13 +77,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: spacing.md,
   },
-  title: {
-    ...typography.display,
-    fontWeight: '700',
-    flex: 1,
-  },
+  title: typography.screenTitle,
   add: {
     width: 44,
     height: 44,

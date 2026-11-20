@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -11,7 +11,7 @@ import { SegmentedControl } from '@/components/segmented-control';
 import { FEED_PAGE_SIZE, fetchPostFeed, markFeedSeen, takeFeedStale, type FeedPost } from '@/lib/feed';
 import { t } from '@/lib/i18n';
 import { useProfile, type Community } from '@/lib/profile';
-import { backgroundGradient, colors, radius, spacing, typography } from '@/theme';
+import { backgroundGradient, colors, radius, spacing, tabBarHeight, typography } from '@/theme';
 
 const sections = ['recipes', 'posts'] as const;
 type Section = (typeof sections)[number];
@@ -122,12 +122,14 @@ export default function Home() {
   }
 
   const showPosts = section === 'posts';
+  // Su iOS il tab Home non ha gli inset automatici (_layout.tsx): la tab bar è a carico della lista.
+  const bottomInset = insets.bottom + (Platform.OS === 'ios' ? tabBarHeight : 0);
 
   return (
     <FlatList
       style={styles.root}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }]}
-      scrollIndicatorInsets={{ top: insets.top, bottom: insets.bottom }}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl, paddingBottom: bottomInset + spacing.xl }]}
+      scrollIndicatorInsets={{ top: insets.top, bottom: bottomInset }}
       data={showPosts ? posts : []}
       keyExtractor={(post) => post.id}
       renderItem={({ item }) => {
@@ -158,14 +160,16 @@ export default function Home() {
       onRefresh={showPosts ? refresh : undefined}
       ListHeaderComponent={
         <View style={styles.header}>
-          <View style={styles.topBar}>
-            <Text style={typography.brand} accessibilityRole="header">
-              Foodity
-            </Text>
-          </View>
+          <Text style={typography.screenTitle} accessibilityRole="header">
+            Foodity
+          </Text>
           <SegmentedControl options={sections} value={section} onChange={setSection} label={(value) => t(`home.sections.${value}`)} />
           {showPosts && chips.length > 0 && (
-            <View style={styles.chips}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.chipsScroll}
+              contentContainerStyle={styles.chips}>
               {chips.map((value) => (
                 <ChoiceButton
                   key={value}
@@ -175,7 +179,7 @@ export default function Home() {
                   style={styles.chip}
                 />
               ))}
-            </View>
+            </ScrollView>
           )}
         </View>
       }
@@ -210,14 +214,13 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing.lg,
   },
-  topBar: {
-    minHeight: 48,
-    justifyContent: 'center',
+  // Riga unica: su schermi stretti scorre, sbordando nel padding della lista fino ai bordi.
+  chipsScroll: {
+    marginHorizontal: -spacing.xl,
   },
   chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
   chip: {
     borderRadius: radius.pill,

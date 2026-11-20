@@ -10,7 +10,7 @@ export default function Faq() {
   return (
     <Screen back contentContainerStyle={styles.content}>
       <BackButtonSpace />
-      <Text style={typography.display} accessibilityRole="header">
+      <Text style={typography.screenTitle} accessibilityRole="header">
         {t('faq.title')}
       </Text>
       <View style={styles.empty}>

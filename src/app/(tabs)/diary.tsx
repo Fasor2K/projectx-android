@@ -93,7 +93,6 @@ export default function Diary() {
 const styles = StyleSheet.create({
   content: {
     gap: spacing.lg,
-    paddingHorizontal: spacing.lg,
   },
   header: {
     flexDirection: 'row',
@@ -101,10 +100,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  title: {
-    ...typography.display,
-    fontWeight: '700',
-  },
+  title: typography.screenTitle,
   actions: {
     flexDirection: 'row',
     gap: spacing.sm,

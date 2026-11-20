@@ -153,14 +153,12 @@ export default function ComposeMeal() {
     // Il riepilogo fisso ha i campi glicemia/insulina: su iOS va spinto sopra la tastiera (come in feedback.tsx).
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen back keyboardDismissMode="on-drag" contentContainerStyle={styles.content} footer={summary || undefined}>
-        <View style={styles.header}>
-          <BackButtonSpace />
-          <View style={styles.headerText}>
-            <Text style={styles.title} accessibilityRole="header">
-              {t('diary.meal.title')}
-            </Text>
-            <Text style={styles.date}>{date}</Text>
-          </View>
+        <BackButtonSpace />
+        <View>
+          <Text style={typography.screenTitle} accessibilityRole="header">
+            {t('diary.meal.title')}
+          </Text>
+          <Text style={styles.date}>{date}</Text>
         </View>
 
         <SegmentedControl options={mealTypes} value={type} onChange={setType} label={(m) => t(`reminders.meals.${m}`)} />
@@ -252,18 +250,6 @@ const styles = StyleSheet.create({
   content: {
     gap: spacing.lg,
     paddingHorizontal: spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  headerText: {
-    flex: 1,
-  },
-  title: {
-    ...typography.display,
-    fontWeight: '700',
   },
   date: {
     ...typography.body,

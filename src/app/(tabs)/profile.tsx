@@ -54,15 +54,14 @@ export default function Profile() {
   return (
     <Screen contentContainerStyle={styles.content}>
       <View style={styles.topBar}>
-        <Text style={typography.label} accessibilityRole="header">
+        <Text style={typography.screenTitle} accessibilityRole="header">
           {t('profile.title')}
         </Text>
         <Pressable
           onPress={() => router.push('/settings')}
           accessibilityRole="button"
           accessibilityLabel={t('profile.settings')}
-          hitSlop={spacing.sm}
-          style={styles.settings}>
+          hitSlop={spacing.sm}>
           <GlassSurface interactive style={styles.settingsSurface}>
             <Icon sf="gearshape" md="settings" size={24} tintColor={colors.text} />
           </GlassSurface>
@@ -189,13 +188,10 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   topBar: {
-    minHeight: 48,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  settings: {
-    position: 'absolute',
-    right: 0,
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
   settingsSurface: {
     width: 48,

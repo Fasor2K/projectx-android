@@ -2,6 +2,7 @@ import { router, useLocalSearchParams, useNavigation, usePreventRemove } from 'e
 import { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { BackButtonSpace } from '@/components/back-button';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
@@ -83,12 +84,10 @@ export default function NewPost() {
       headerRight={
         <Button title={t(editing ? 'newPost.save' : 'newPost.publish')} onPress={publish} loading={saving} disabled={saving} style={styles.publish} />
       }>
-      {/* Alla stessa altezza dell'indietro e di "Pubblica", fissi sopra. */}
-      <View style={styles.titleRow}>
-        <Text style={typography.title} accessibilityRole="header">
-          {t(editing ? 'newPost.editTitle' : 'newPost.title')}
-        </Text>
-      </View>
+      <BackButtonSpace />
+      <Text style={typography.screenTitle} accessibilityRole="header">
+        {t(editing ? 'newPost.editTitle' : 'newPost.title')}
+      </Text>
 
       <Card>
         <View style={styles.author}>
@@ -172,11 +171,6 @@ const styles = StyleSheet.create({
   publish: {
     minHeight: 44,
     borderRadius: radius.pill,
-  },
-  titleRow: {
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   author: {
     flexDirection: 'row',

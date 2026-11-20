@@ -34,7 +34,7 @@ export default function Login() {
       <View style={styles.header}>
         <Text style={typography.brand}>Foodity</Text>
         <Text style={[typography.eyebrow, styles.eyebrow]}>{t('login.eyebrow')}</Text>
-        <Text style={typography.display}>{t('login.title')}</Text>
+        <Text style={typography.screenTitle} accessibilityRole="header">{t('login.title')}</Text>
         <Text style={typography.body}>{t('login.subtitle')}</Text>
       </View>
 

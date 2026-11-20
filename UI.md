@@ -37,6 +37,7 @@ Non replicare il glass a mano (blur, gradienti, `opacity`): non è Liquid Glass 
 - Il layout è avvolto in `ThemeProvider` per evitare il flash bianco al cambio tab su iOS 26: non rimuoverlo.
 - Su iOS 26 `backgroundColor`, `blurEffect`, `shadowColor` della tab bar non hanno effetto (è Liquid Glass). Su iOS ≤ 18 la barra diventa trasparente al bordo di scroll: metti lo `ScrollView` come primo figlio dello screen, oppure usa `disableTransparentOnScrollEdge`.
 - Su Android lo screen ha solo l'inset inferiore: gli altri inset (status bar) sono a carico dello screen.
+- Su iOS le native tabs forzano gli inset automatici sul primo `ScrollView` dello screen. Sulla Home (lista con `RefreshControl`) raddoppiavano l'inset superiore: il suo trigger ha `disableAutomaticContentInsets` su iOS e la lista aggiunge da sé `tabBarHeight` in fondo.
 
 ## `GlassSurface`
 
@@ -62,7 +63,7 @@ Regole d'uso:
 
 - Colori, gradiente di sfondo, raggi, spaziature, testi e ombra stanno in [src/theme.ts](src/theme.ts): non scrivere colori o misure a mano nelle schermate, aggiungi il token lì.
 - Componenti generici in `src/components/`:
-  - `Screen`: sfondo a gradiente, scroll che segue la tastiera; il contenuto scorre sotto le safe area (status bar, home indicator). Il padding del contenuto include già gli inset. `back` (o `'close'`) mette il pulsante indietro fisso in alto mentre il contenuto scorre: in ogni schermata con indietro usalo, con `BackButtonSpace` nel contenuto dove il pulsante deve apparire (anche in una riga con il titolo). `footer` tiene fisse in fondo le azioni principali, `headerRight` in alto a destra.
+  - `Screen`: sfondo a gradiente, scroll che segue la tastiera; il contenuto scorre sotto le safe area (status bar, home indicator). Il padding del contenuto include già gli inset. `back` (o `'close'`) mette il pulsante indietro fisso in alto mentre il contenuto scorre: in ogni schermata con indietro usalo, con `BackButtonSpace` nel contenuto dove il pulsante deve apparire (anche in una riga con il titolo). `footer` tiene fisse in fondo le azioni principali, `headerRight` in alto a destra. Il titolo di ogni schermata usa `typography.screenTitle` (uguale ovunque), allineato a sinistra: in cima nei tab (eventuali azioni a destra sulla stessa riga), sotto la riga dell'indietro nelle schermate con `back` (`BackButtonSpace` da solo, o con le azioni a destra). Fanno eccezione i nomi di ricette e prodotti nei dettagli e i titoli dei formSheet.
   - `Card`: contenitore bianco con bordo e ombra.
   - `TextField`: etichetta, icona, unità (`suffix`), nota sotto, `secure` per le password con il toggle mostra/nascondi.
   - `Button`: pulsante primario con icona e stato `loading`.

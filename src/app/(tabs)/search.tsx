@@ -25,10 +25,6 @@ export default function Search() {
 const styles = StyleSheet.create({
   content: {
     gap: spacing.md,
-    paddingHorizontal: spacing.lg,
   },
-  title: {
-    ...typography.display,
-    fontWeight: '700',
-  },
+  title: typography.screenTitle,
 });

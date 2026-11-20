@@ -5,12 +5,10 @@ import { Animated, Modal, Platform, Pressable, StyleSheet, Text } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { t } from '@/lib/i18n';
-import { colors, radius, shadow, spacing, typography } from '@/theme';
+import { colors, radius, shadow, spacing, tabBarHeight, typography } from '@/theme';
 
 // iOS 26+ places the "search" tab on its own surface at the right; on older iOS it would show the system "Search" title.
 const separateTab = Platform.OS === 'ios' && Number.parseInt(String(Platform.Version), 10) >= 26;
-// Space above the bottom inset taken by the tab bar, so the menu opens just above it.
-const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 64 : 80;
 
 export default function TabsLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,7 +27,8 @@ export default function TabsLayout() {
   return (
     <>
       <NativeTabs>
-        <NativeTabs.Trigger name="index">
+        {/* iOS: the tabs would force automatic insets on the Home list (RefreshControl), doubling the top inset it already pads. */}
+        <NativeTabs.Trigger name="index" disableAutomaticContentInsets={Platform.OS === 'ios'}>
           <NativeTabs.Trigger.Label>{t('tabs.home')}</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
         </NativeTabs.Trigger>
@@ -79,7 +78,7 @@ function CreateMenu({ open, progress, onClose }: CreateMenuProps) {
         style={[
           styles.menu,
           {
-            bottom: insets.bottom + TAB_BAR_HEIGHT,
+            bottom: insets.bottom + tabBarHeight,
             opacity: progress,
             transform: [{ scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1] }) }],
           },

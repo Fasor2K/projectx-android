@@ -75,7 +75,7 @@ export default function Settings() {
     <Screen back contentContainerStyle={styles.content}>
       <BackButtonSpace />
       <View style={styles.header}>
-        <Text style={typography.display} accessibilityRole="header">
+        <Text style={typography.screenTitle} accessibilityRole="header">
           {t('settings.title')}
         </Text>
         <Text style={typography.body}>{t('settings.subtitle')}</Text>

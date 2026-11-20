@@ -64,7 +64,7 @@ export default function Register() {
     <Screen back contentContainerStyle={styles.content}>
       <BackButtonSpace />
 
-      <Text style={[typography.display, styles.title]} accessibilityRole="header">
+      <Text style={typography.screenTitle} accessibilityRole="header">
         {t('register.title')}
       </Text>
 
@@ -149,9 +149,6 @@ export default function Register() {
 const styles = StyleSheet.create({
   content: {
     gap: spacing.lg,
-  },
-  title: {
-    marginVertical: spacing.sm,
   },
   terms: {
     flexDirection: 'row',

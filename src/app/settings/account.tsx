@@ -79,7 +79,7 @@ export default function Account() {
     <Screen back contentContainerStyle={styles.content}>
       <BackButtonSpace />
 
-      <Text style={[typography.display, styles.title]} accessibilityRole="header">
+      <Text style={typography.screenTitle} accessibilityRole="header">
         {t('account.title')}
       </Text>
 
@@ -166,9 +166,6 @@ export default function Account() {
 const styles = StyleSheet.create({
   content: {
     gap: spacing.lg,
-  },
-  title: {
-    marginVertical: spacing.sm,
   },
   submit: {
     alignSelf: 'flex-end',

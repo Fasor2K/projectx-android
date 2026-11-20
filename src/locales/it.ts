@@ -210,6 +210,8 @@ export const it: typeof en = {
     },
     emptyTitle: 'Scrivi qualcosa',
     emptyMessage: 'Il post deve avere un testo.',
+    noCommunityTitle: 'Scegli una community',
+    noCommunityMessage: 'Scegli dove pubblicare il post.',
     imageTooLarge: 'La foto è troppo grande.',
     published: 'Post pubblicato',
     discardTitle: 'Eliminare il post?',

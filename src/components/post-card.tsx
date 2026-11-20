@@ -19,10 +19,12 @@ type Props = {
   onDeleted?: () => void;
   /** In alto a destra al posto del menu (es. "Segui"). */
   action?: ReactNode;
+  /** Mostra la community (o "Generale") accanto al tempo: solo nel proprio Profilo, non nel feed. */
+  showCommunity?: boolean;
 };
 
-/** Post (Profilo, Home): autore, tempo e visibilità, testo, foto, Mi piace, commenti (sheet `feedback`), condividi. */
-export function PostCard({ post, author, onLike, onDeleted, action }: Props) {
+/** Post (Profilo, Home): autore, tempo (e visibilità con `showCommunity`), testo, foto, Mi piace, commenti (sheet `feedback`), condividi. */
+export function PostCard({ post, author, onLike, onDeleted, action, showCommunity }: Props) {
   const general = post.community === null;
 
   function confirmDelete() {
@@ -64,11 +66,16 @@ export function PostCard({ post, author, onLike, onDeleted, action }: Props) {
         <View style={styles.author}>
           <Text style={styles.nickname}>{author.nickname}</Text>
           <View style={styles.meta}>
-            <Text style={typography.caption}>{timeAgo(post.created_at)} • </Text>
-            <Icon sf={general ? 'globe' : 'lock'} md={general ? 'public' : 'lock'} size={12} tintColor={colors.textSecondary} />
-            <Text style={typography.caption}>
-              {t(general ? 'newPost.general' : `profileSetup.communities.${post.community}`)}
-            </Text>
+            <Text style={typography.caption}>{timeAgo(post.created_at)}</Text>
+            {showCommunity && (
+              <>
+                <Text style={typography.caption}> • </Text>
+                <Icon sf={general ? 'globe' : 'lock'} md={general ? 'public' : 'lock'} size={12} tintColor={colors.textSecondary} />
+                <Text style={typography.caption}>
+                  {t(general ? 'newPost.general' : `profileSetup.communities.${post.community}`)}
+                </Text>
+              </>
+            )}
           </View>
         </View>
         {onDeleted ? (

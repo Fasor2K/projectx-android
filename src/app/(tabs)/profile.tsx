@@ -127,6 +127,7 @@ export default function Profile() {
               key={post.id}
               post={post}
               author={profile}
+              showCommunity
               onDeleted={() => setPosts((list) => list?.filter((p) => p.id !== post.id))}
               onLike={() => toggleLike(post)}
             />

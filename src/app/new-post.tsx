@@ -31,11 +31,12 @@ export default function NewPost() {
   const [body, setBody] = useState(params.body ?? '');
   // Foto già pubblicata: solo uri, senza base64 (non si ricarica se non cambia).
   const [photo, setPhoto] = useState<Photo | null>(params.image_url ? { uri: params.image_url } : null);
-  // null = Generale. Chi non ha community non vede la scelta e pubblica sempre in Generale.
-  const [community, setCommunity] = useState<Community | null>(initialCommunity);
+  // null = Generale, undefined = non ancora scelta (nuovo post: va scelta). Chi non ha community non vede la scelta e pubblica sempre in Generale.
+  const [community, setCommunity] = useState<Community | null | undefined>(editing ? initialCommunity : undefined);
   const [saving, setSaving] = useState(false);
   const [published, setPublished] = useState(false);
   const communities = profile?.communities ?? [];
+  const mustChoose = communities.length > 0 && community === undefined;
 
   const dirty = editing
     ? body !== params.body || !!photo?.base64 || community !== initialCommunity
@@ -58,11 +59,12 @@ export default function NewPost() {
 
   async function publish() {
     if (!body.trim()) return Alert.alert(t('newPost.emptyTitle'), t('newPost.emptyMessage'));
+    if (mustChoose) return Alert.alert(t('newPost.noCommunityTitle'), t('newPost.noCommunityMessage'));
     setSaving(true);
     try {
       await invoke<{ id: string }>(editing ? 'edit-post' : 'create-post', {
         method: 'POST',
-        body: { id: params.id, body: body.trim(), community, image_base64: photo?.base64 },
+        body: { id: params.id, body: body.trim(), community: community ?? null, image_base64: photo?.base64 },
       });
       markFeedStale();
       setPublished(true);

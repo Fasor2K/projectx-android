@@ -206,6 +206,8 @@ export const en = {
     },
     emptyTitle: 'Write something',
     emptyMessage: 'The post needs some text.',
+    noCommunityTitle: 'Choose a community',
+    noCommunityMessage: 'Choose where to publish the post.',
     imageTooLarge: 'The photo is too large.',
     published: 'Post published',
     discardTitle: 'Discard the post?',

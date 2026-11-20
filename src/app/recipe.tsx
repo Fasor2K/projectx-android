@@ -20,7 +20,8 @@ import { Icon } from '@/components/icon';
 import { defaultQuantity, isValidQuantity, parseQuantity } from '@/components/quantity-field';
 import { SegmentedControl } from '@/components/segmented-control';
 import { scaleNutrition, type Food, type QuantityMode } from '@/lib/diary';
-import { fetchRecipe, followUser, formatIngredient, formatPrepTime, portionFactor, servingInfo, type RecipeDetail } from '@/lib/food';
+import { FollowButton } from '@/components/follow-button';
+import { fetchRecipe, formatIngredient, formatPrepTime, portionFactor, servingInfo, type RecipeDetail } from '@/lib/food';
 import { t } from '@/lib/i18n';
 import { deleteRecipe } from '@/lib/recipe-form';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -280,24 +281,9 @@ function RoundButton({
 /** Autore con foto e "Segui" / "Segui già"; per le proprie ricette niente pulsante. */
 function Author({ recipe: r }: { recipe: RecipeDetail }) {
   const [following, setFollowing] = useState(!!r.author?.is_following);
-  const [saving, setSaving] = useState(false);
   const author = r.author;
 
   if (!author) return <Text style={typography.caption}>{t('foodDetail.deletedAuthor')}</Text>;
-
-  async function toggle() {
-    const next = !following;
-    setFollowing(next);
-    setSaving(true);
-    try {
-      await followUser(author!.id, next);
-    } catch {
-      setFollowing(!next);
-      Alert.alert(t('foodDetail.followFailed'), t('authErrors.generic'));
-    } finally {
-      setSaving(false);
-    }
-  }
 
   return (
     <View style={styles.row}>
@@ -311,18 +297,7 @@ function Author({ recipe: r }: { recipe: RecipeDetail }) {
       <Text style={[typography.label, styles.grow]} numberOfLines={1}>
         {author.nickname}
       </Text>
-      {!r.is_mine && (
-        <Pressable
-          onPress={toggle}
-          disabled={saving}
-          accessibilityRole="button"
-          accessibilityState={{ selected: following, busy: saving }}
-          style={[styles.follow, following && styles.following]}>
-          <Text style={[styles.followText, following && styles.followingText]}>
-            {t(following ? 'foodDetail.following' : 'foodDetail.follow')}
-          </Text>
-        </Pressable>
-      )}
+      {!r.is_mine && <FollowButton userId={author.id} following={following} onChange={setFollowing} />}
     </View>
   );
 }
@@ -365,23 +340,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primarySoft,
-  },
-  follow: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-  },
-  following: {
-    backgroundColor: colors.primarySoft,
-  },
-  followText: {
-    ...typography.label,
-    color: colors.onPrimary,
-  },
-  followingText: {
-    color: colors.primary,
   },
   note: {
     ...typography.caption,

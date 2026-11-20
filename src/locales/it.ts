@@ -188,6 +188,14 @@ export const it: typeof en = {
     openSettings: 'Apri Impostazioni',
     notFound: 'Non abbiamo trovato un prodotto con questo codice a barre.',
   },
+  home: {
+    sections: {
+      recipes: 'Ricette',
+      posts: 'Post',
+    },
+    noPosts: 'Ancora nessun post',
+    loadFailed: 'Non siamo riusciti a caricare i post.',
+  },
   newPost: {
     title: 'Nuovo post',
     publish: 'Pubblica',

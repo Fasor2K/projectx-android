@@ -7,6 +7,7 @@ import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { t } from '@/lib/i18n';
+import { markFeedStale } from '@/lib/feed';
 import { ApiError, invoke, useProfile, type Community } from '@/lib/profile';
 import { pickRecipePhoto, type Photo } from '@/lib/recipe-form';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -63,6 +64,7 @@ export default function NewPost() {
         method: 'POST',
         body: { id: params.id, body: body.trim(), community, image_base64: photo?.base64 },
       });
+      markFeedStale();
       setPublished(true);
     } catch (e) {
       const code = e instanceof ApiError ? e.code : undefined;

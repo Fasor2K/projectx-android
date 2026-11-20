@@ -184,6 +184,14 @@ export const en = {
     openSettings: 'Open Settings',
     notFound: "We couldn't find a product with this barcode.",
   },
+  home: {
+    sections: {
+      recipes: 'Recipes',
+      posts: 'Posts',
+    },
+    noPosts: 'No posts yet',
+    loadFailed: "We couldn't load the posts.",
+  },
   newPost: {
     title: 'New post',
     publish: 'Publish',

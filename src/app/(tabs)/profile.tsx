@@ -1,30 +1,26 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Image, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
 import { Icon } from '@/components/icon';
+import { PostCard, usePosts } from '@/components/post-card';
 import { Screen } from '@/components/screen';
 import { SegmentedControl } from '@/components/segmented-control';
-import { timeAgo } from '@/lib/food';
 import { i18n, t } from '@/lib/i18n';
 import {
-  deletePost,
   fetchMyPosts,
   fetchMyRecipes,
   fetchProfileStats,
-  likePost,
   useProfile,
   type MyPost,
   type MyRecipe,
-  type Profile as ProfileData,
   type ProfileStats,
 } from '@/lib/profile';
 import { colors, radius, spacing, typography } from '@/theme';
 
 const AVATAR_SIZE = 96;
-const POST_AVATAR_SIZE = 36;
 
 const sections = ['recipes', 'saved', 'posts'] as const;
 type Section = (typeof sections)[number];
@@ -34,7 +30,7 @@ export default function Profile() {
   const { profile } = useProfile();
   const [stats, setStats] = useState<ProfileStats>();
   const [recipes, setRecipes] = useState<MyRecipe[]>();
-  const [posts, setPosts] = useState<MyPost[]>();
+  const { posts, setPosts, toggleLike } = usePosts<MyPost>();
   const [section, setSection] = useState<Section>('recipes');
 
   // Ricaricati a ogni ritorno sul tab: i contatori cambiano da altre schermate.
@@ -43,22 +39,8 @@ export default function Profile() {
       fetchProfileStats().then(setStats, () => {});
       fetchMyRecipes().then(setRecipes, () => {});
       fetchMyPosts().then(setPosts, () => {});
-    }, []),
+    }, [setPosts]),
   );
-
-  function updatePost(id: string, changes: Partial<MyPost>) {
-    setPosts((list) => list?.map((p) => (p.id === id ? { ...p, ...changes } : p)));
-  }
-
-  // Ottimistico: il cuore cambia subito e torna com'era se like-post fallisce.
-  function toggleLike(post: MyPost) {
-    const liked = !post.liked;
-    updatePost(post.id, { liked, likes_count: post.likes_count + (liked ? 1 : -1) });
-    likePost(post.id, liked).then(
-      (r) => updatePost(post.id, { liked: r.liked, likes_count: r.likes_count }),
-      () => updatePost(post.id, { liked: post.liked, likes_count: post.likes_count }),
-    );
-  }
 
   if (!profile) return null;
 
@@ -191,112 +173,6 @@ function RecipeTile({ recipe }: { recipe: MyRecipe }) {
   );
 }
 
-/** Post del Profilo: autore, tempo e visibilità, testo, foto, Mi piace, commenti (sheet `feedback`), condividi e menu "…". */
-function PostCard({
-  post,
-  author,
-  onDeleted,
-  onLike,
-}: {
-  post: MyPost;
-  author: ProfileData;
-  onDeleted: () => void;
-  onLike: () => void;
-}) {
-  const general = post.community === null;
-
-  function confirmDelete() {
-    Alert.alert(t('profile.post.deleteTitle'), t('profile.post.deleteMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('profile.post.delete'),
-        style: 'destructive',
-        onPress: () => deletePost(post.id).then(onDeleted, () => Alert.alert(t('profile.post.deleteFailed'), t('authErrors.generic'))),
-      },
-    ]);
-  }
-
-  function openMenu() {
-    Alert.alert(t('profile.post.menu'), undefined, [
-      {
-        text: t('profile.post.edit'),
-        onPress: () =>
-          router.push({
-            pathname: '/new-post',
-            params: { id: post.id, body: post.body, community: post.community ?? '', image_url: post.image_url ?? '' },
-          }),
-      },
-      { text: t('profile.post.delete'), style: 'destructive', onPress: confirmDelete },
-      { text: t('common.cancel'), style: 'cancel' },
-    ]);
-  }
-
-  return (
-    <Card>
-      <View style={styles.postHeader}>
-        <View style={styles.postAvatar}>
-          {author.avatar_url ? (
-            <Image source={{ uri: author.avatar_url }} style={StyleSheet.absoluteFill} />
-          ) : (
-            <Icon sf="person.fill" md="person" size={20} tintColor={colors.textMuted} />
-          )}
-        </View>
-        <View style={styles.postAuthor}>
-          <Text style={styles.postNickname}>{author.nickname}</Text>
-          <View style={styles.postMeta}>
-            <Text style={typography.caption}>{timeAgo(post.created_at)} • </Text>
-            <Icon sf={general ? 'globe' : 'lock'} md={general ? 'public' : 'lock'} size={12} tintColor={colors.textSecondary} />
-            <Text style={typography.caption}>
-              {t(general ? 'newPost.general' : `profileSetup.communities.${post.community}`)}
-            </Text>
-          </View>
-        </View>
-        <Pressable onPress={openMenu} accessibilityRole="button" accessibilityLabel={t('profile.post.more')} hitSlop={spacing.md}>
-          <Icon sf="ellipsis" md="more_horiz" size={20} tintColor={colors.text} />
-        </Pressable>
-      </View>
-
-      <Text style={styles.postBody}>{post.body}</Text>
-      {post.image_url && <Image source={{ uri: post.image_url }} style={styles.postImage} accessibilityIgnoresInvertColors />}
-
-      <View style={styles.postActions}>
-        <Pressable
-          onPress={onLike}
-          accessibilityRole="button"
-          accessibilityLabel={t('profile.post.likes', { count: post.likes_count })}
-          accessibilityState={{ selected: post.liked }}
-          hitSlop={spacing.sm}
-          style={styles.postCount}>
-          <Icon
-            sf={post.liked ? 'heart.fill' : 'heart'}
-            md="favorite"
-            size={22}
-            tintColor={post.liked ? colors.danger : colors.textSecondary}
-          />
-          <Text style={typography.caption}>{post.likes_count}</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => router.push({ pathname: '/feedback', params: { post_id: post.id } })}
-          accessibilityRole="button"
-          accessibilityLabel={t('profile.post.comments', { count: post.comments_count })}
-          hitSlop={spacing.sm}
-          style={styles.postCount}>
-          <Icon sf="bubble.left" md="chat_bubble" size={20} tintColor={colors.textSecondary} />
-          <Text style={typography.caption}>{post.comments_count}</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => Share.share({ message: post.body })}
-          accessibilityRole="button"
-          accessibilityLabel={t('profile.post.share')}
-          hitSlop={spacing.md}
-          style={styles.postShare}>
-          <Icon sf="paperplane" md="send" size={20} tintColor={colors.textSecondary} />
-        </Pressable>
-      </View>
-    </Card>
-  );
-}
-
 /** value undefined = contatori in caricamento. */
 function Stat({ value, label }: { value: string | undefined; label: string }) {
   return (
@@ -404,57 +280,6 @@ const styles = StyleSheet.create({
   },
   posts: {
     gap: spacing.lg,
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  postAvatar: {
-    width: POST_AVATAR_SIZE,
-    height: POST_AVATAR_SIZE,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
-    overflow: 'hidden',
-  },
-  postAuthor: {
-    flex: 1,
-  },
-  postNickname: {
-    ...typography.label,
-    fontSize: 15,
-    fontWeight: '400',
-  },
-  postMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  postBody: {
-    fontSize: 16,
-    fontWeight: '500',
-    lineHeight: 23,
-    color: colors.text,
-  },
-  postImage: {
-    width: '100%',
-    aspectRatio: 2,
-    borderRadius: radius.md,
-  },
-  postActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xl,
-  },
-  postCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  postShare: {
-    marginLeft: 'auto',
   },
   empty: {
     flex: 1,

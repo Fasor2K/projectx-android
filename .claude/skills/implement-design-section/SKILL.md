@@ -36,7 +36,7 @@ Il resto lo decidi tu con default ragionevoli e lo dichiari nel riepilogo.
 - Branch `feat/<sezione>` in entrambe le repo prima di scrivere.
 - Segui la skill `supabase-endpoint` per ogni endpoint (codice + sezione in ENDPOINTS.md) e la procedura di DATABASE.md per lo schema. Scritture su più tabelle e regole con fuso orario dell'utente: funzioni SQL in una nuova migrazione, `revoke` da `public, anon, authenticated` e `grant` a `service_role`; errori di regola come `raise exception '<codice>'` mappati a 4xx dall'endpoint.
 - Helper comuni a più endpoint della sezione in `supabase/functions/_shared/<sezione>.ts`.
-- Verifica senza CLI installati: `npx -y deno@2 check <funzioni>/index.ts` e un piccolo script con asserzioni per i validatori (`npx -y deno@2 run`). L'SQL non si può eseguire in locale: rileggilo e dillo nel riepilogo.
+- Verifica senza CLI installati: `npx -y deno@2 check <funzioni>/index.ts` e un piccolo script con asserzioni per i validatori (`npx -y deno@2 run`). L'SQL si esegue su un Postgres in memoria con `tests/run_sql.ts` e uno script di asserzioni in `projectx-be/tests/` (vedi `projectx-be/CLAUDE.md`, "Verificare l'SQL").
 
 ## 5. App (projectx-android)
 

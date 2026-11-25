@@ -25,6 +25,7 @@ export const colors = {
   // Sfondo a gradiente delle schermate (dall'alto verso il basso).
   backgroundTop: '#F1F4FB',
   backgroundBottom: '#C4D3F1',
+  badgeBackground: '#1d8acf',
 } as const;
 
 /** Sheet Recensioni / Segnalazioni: colori presi dal design (richiesto di seguirlo alla lettera). */

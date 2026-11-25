@@ -32,7 +32,7 @@ type IngredientsView = 'recipe' | 'mine';
 /**
  * Dettaglio ricetta: autore e Segui, bilancio nutrizionale e ingredienti ricalcolati sulla quantità scelta
  * ("mia porzione"), procedimento, note, categorie, recensioni e segnalazioni, Aggiungi a pasto.
- * Accanto al titolo: Salva / Salvata e Condividi.
+ * Accanto al titolo: Condividi e Salva / Salvata.
  * Sulle proprie ricette, accanto ad Aggiungi a pasto: modifica (riapre Nuova ricetta) ed elimina.
  */
 export default function RecipeScreen() {
@@ -135,17 +135,17 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
             {r.title}
           </Text>
           <TitleAction
+            sf="square.and.arrow.up"
+            md="share"
+            label={t('home.recipe.share')}
+            onPress={() => Share.share({ message: r.title })}
+          />
+          <TitleAction
             sf={saved ? 'bookmark.fill' : 'bookmark'}
             md="bookmark"
             label={t(saved ? 'home.recipe.saved' : 'home.recipe.save')}
             selected={saved}
             onPress={toggleSave}
-          />
-          <TitleAction
-            sf="square.and.arrow.up"
-            md="share"
-            label={t('home.recipe.share')}
-            onPress={() => Share.share({ message: r.title })}
           />
         </View>
         <View style={styles.row}>
@@ -305,7 +305,7 @@ function RoundButton({
   );
 }
 
-/** Icona accanto al titolo (Salva, Condividi). */
+/** Icona accanto al titolo (Condividi, Salva). */
 function TitleAction({
   sf,
   md,
@@ -319,7 +319,8 @@ function TitleAction({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      hitSlop={spacing.sm}>
+      hitSlop={spacing.xs}
+      style={styles.titleAction}>
       <Icon sf={sf} md={md} size={24} tintColor={selected ? colors.primary : colors.text} />
     </Pressable>
   );
@@ -369,6 +370,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  // Stesso box per le icone del titolo: glifi diversi restano allineati.
+  titleAction: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   // Alto come Button (minHeight 54).
   roundButton: {

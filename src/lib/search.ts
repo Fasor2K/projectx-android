@@ -43,11 +43,15 @@ export const tagSections = {
 
 export type QuickFilter = 'mine' | 'frequent' | 'popular';
 
-export type SearchTab = 'recipes' | 'products';
+export type SearchTab = 'recipes' | 'products' | 'users';
+
+/** Utente di search-users. */
+export type UserResult = { id: string; nickname: string; avatar_url: string | null };
 
 export const quickFilters: Record<SearchTab, QuickFilter[]> = {
   recipes: ['mine', 'frequent', 'popular'],
   products: ['frequent'],
+  users: [],
 };
 
 /** `recent`: senza testo, gli alimenti usati di recente nei pasti invece dei suggeriti. */
@@ -65,6 +69,9 @@ export const searchRecipes = async (q: string | undefined, tags: string[], recen
   return (await invoke<{ recipes: Recipe[] }>(`search-recipes?${params}`, { method: 'GET' })).recipes;
 };
 
+export const searchUsers = async (q: string) =>
+  (await invoke<{ users: UserResult[] }>(`search-users?${new URLSearchParams({ q })}`, { method: 'GET' })).users;
+
 export const fetchProductByBarcode = async (barcode: string) =>
   (await invoke<{ product: Product }>(`get-product-by-barcode?barcode=${barcode}`, { method: 'GET' })).product;
 
@@ -78,11 +85,19 @@ export const useSearchFilters = () => useContext(SearchFiltersContext);
 
 const SEARCH_DELAY_MS = 300;
 
-type Results = { key: string; tab: SearchTab; recipes: Recipe[]; products: Product[]; recent?: boolean; failed?: boolean };
+type Results = {
+  key: string;
+  tab: SearchTab;
+  recipes: Recipe[];
+  products: Product[];
+  users: UserResult[];
+  recent?: boolean;
+  failed?: boolean;
+};
 
 /**
  * Ricerca di Cerca e di Aggiungi ingrediente, con un ritardo mentre si scrive. Senza testo (`q` assente) mostra i
- * recenti e, se non ce ne sono, i suggeriti (`recent` = false). `enabled` false: nessuna richiesta e nessun risultato.
+ * recenti e, se non ce ne sono, i suggeriti (`recent` = false); gli utenti solo con il testo. `enabled` false: nessuna richiesta e nessun risultato.
  */
 export function useFoodSearch(tab: SearchTab, q: string | undefined, tags: string[], enabled = true) {
   const [attempt, setAttempt] = useState(0);
@@ -97,16 +112,17 @@ export function useFoodSearch(tab: SearchTab, q: string | undefined, tags: strin
         const run = async (recent: boolean) => ({
           recipes: tab === 'recipes' ? await searchRecipes(q, tags, recent) : [],
           products: tab === 'products' ? await searchProducts(q, recent) : [],
+          users: tab === 'users' && q ? await searchUsers(q) : [],
         });
         let recent = !q;
         let found = await run(recent);
-        if (recent && found.recipes.length + found.products.length === 0) {
+        if (recent && tab !== 'users' && found.recipes.length + found.products.length === 0) {
           recent = false;
           found = await run(false);
         }
         if (!stale) setResults({ key, tab, ...found, recent });
       } catch {
-        if (!stale) setResults({ key, tab, recipes: [], products: [], failed: true });
+        if (!stale) setResults({ key, tab, recipes: [], products: [], users: [], failed: true });
       }
     }, SEARCH_DELAY_MS);
     return () => {
@@ -123,6 +139,7 @@ export function useFoodSearch(tab: SearchTab, q: string | undefined, tags: strin
   return {
     recipes: current?.recipes ?? [],
     products: current?.products ?? [],
+    users: current?.users ?? [],
     recent: current?.recent,
     loading,
     failed: enabled && !loading && !!results?.failed,

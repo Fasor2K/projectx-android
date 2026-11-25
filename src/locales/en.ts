@@ -23,6 +23,7 @@ export const en = {
     tabs: {
       recipes: 'Recipes',
       products: 'Products and ingredients',
+      users: 'Users',
     },
     filters: 'Filters, %{count} selected',
     scan: 'Scan a barcode',
@@ -36,6 +37,7 @@ export const en = {
     results: 'Results',
     empty: 'No results.',
     emptyFiltered: 'No recipes match these filters.',
+    usersHint: 'Type at least 2 characters to search for people.',
     failed: "Couldn't load the results.",
   },
   food: {

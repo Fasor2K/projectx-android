@@ -24,6 +24,7 @@ export const it: typeof en = {
     tabs: {
       recipes: 'Ricette',
       products: 'Prodotti e ingredienti',
+      users: 'Utenti',
     },
     filters: 'Filtri, %{count} selezionati',
     scan: 'Scansiona un codice a barre',
@@ -37,6 +38,7 @@ export const it: typeof en = {
     results: 'Risultati',
     empty: 'Nessun risultato.',
     emptyFiltered: 'Nessuna ricetta con questi filtri.',
+    usersHint: 'Scrivi almeno 2 caratteri per cercare le persone.',
     failed: 'Non è stato possibile caricare i risultati.',
   },
   food: {

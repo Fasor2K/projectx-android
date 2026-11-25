@@ -6,7 +6,7 @@ import { Screen } from '@/components/screen';
 import { t } from '@/lib/i18n';
 import { spacing, typography } from '@/theme';
 
-/** Pagina Cerca, con due tab: ricette (testo e filtri) e prodotti (testo e scansione). */
+/** Pagina Cerca, con tre tab: ricette (testo e filtri), prodotti (testo e scansione) e utenti (testo). */
 export default function Search() {
   return (
     <Screen keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
@@ -17,6 +17,7 @@ export default function Search() {
         onSelectRecipe={(recipe) => router.push({ pathname: '/recipe', params: { id: recipe.id } })}
         onSelectProduct={(product) => router.push({ pathname: '/product', params: { id: product.id } })}
         onScan={() => router.push('/scanner')}
+        users
       />
     </Screen>
   );

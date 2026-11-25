@@ -1,12 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { Card } from '@/components/card';
 import { ChoiceButton } from '@/components/choice-button';
 import { ProductCard, RecipeCard } from '@/components/food-card';
 import { GlassSurface } from '@/components/glass-surface';
 import { Icon } from '@/components/icon';
+import { UserLink } from '@/components/profile-summary';
 import { t } from '@/lib/i18n';
 import {
   quickFilters,
@@ -19,8 +21,6 @@ import {
 } from '@/lib/search';
 import { colors, radius, shadow, spacing, typography } from '@/theme';
 
-const tabs: SearchTab[] = ['recipes', 'products'];
-
 type Props = {
   onSelectRecipe: (recipe: Recipe) => void;
   onSelectProduct: (product: Product) => void;
@@ -28,13 +28,16 @@ type Props = {
   onScan: () => void;
   /** Risultato evidenziato (scelto). */
   selectedId?: string;
+  /** Aggiunge il tab Utenti (solo pagina Cerca): un risultato apre il Profilo utente. */
+  users?: boolean;
 };
 
 /**
- * Ricerca di ricette e prodotti: tab, campo, filtri o scansione, chip e risultati.
+ * Ricerca di ricette, prodotti e (con `users`) utenti: tab, campo, filtri o scansione, chip e risultati.
  * Pagina Cerca e sheet Aggiungi ingrediente; i filtri (tag) sono quelli di `SearchFiltersContext`, condivisi.
  */
-export function FoodSearch({ onSelectRecipe, onSelectProduct, onScan, selectedId }: Props) {
+export function FoodSearch({ onSelectRecipe, onSelectProduct, onScan, selectedId, users: withUsers }: Props) {
+  const tabs: SearchTab[] = withUsers ? ['recipes', 'products', 'users'] : ['recipes', 'products'];
   const { tags } = useSearchFilters();
   const [tab, setTab] = useState<SearchTab>('recipes');
   const [text, setText] = useState('');
@@ -44,10 +47,12 @@ export function FoodSearch({ onSelectRecipe, onSelectProduct, onScan, selectedId
   const q = text.trim().length >= 2 ? text.trim() : undefined;
   // Solo "Popolari" ha già i dati: gli altri chip hanno bisogno di ricette e diario, che non esistono ancora.
   const unavailable = quick !== undefined && quick !== 'popular';
-  const { recipes, products, recent, loading, failed, retry } = useFoodSearch(tab, q, tags, !unavailable);
+  // Gli utenti non hanno recenti né suggeriti: senza testo nessuna richiesta.
+  const typeToSearch = tab === 'users' && !q;
+  const { recipes, products, users, recent, loading, failed, retry } = useFoodSearch(tab, q, tags, !unavailable && !typeToSearch);
   const shownRecipes =
     quick === 'popular' ? [...recipes].sort((a, b) => (b.rating_avg ?? 0) - (a.rating_avg ?? 0)) : recipes;
-  const empty = !loading && !failed && shownRecipes.length + products.length === 0;
+  const empty = !typeToSearch && !loading && !failed && shownRecipes.length + products.length + users.length === 0;
 
   return (
     <>
@@ -91,7 +96,7 @@ export function FoodSearch({ onSelectRecipe, onSelectProduct, onScan, selectedId
             <Icon sf="magnifyingglass" md="search" tintColor={colors.textMuted} />
           )}
         </View>
-        {tab === 'recipes' ? (
+        {tab === 'users' ? null : tab === 'recipes' ? (
           <Pressable
             onPress={() => router.push('/search-filters')}
             accessibilityRole="button"
@@ -127,7 +132,13 @@ export function FoodSearch({ onSelectRecipe, onSelectProduct, onScan, selectedId
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>{t(q ? 'search.results' : recent === false ? 'search.suggested' : 'search.recent')}</Text>
+      {typeToSearch ? (
+        <Text style={styles.message}>{t('search.usersHint')}</Text>
+      ) : (
+        <Text style={styles.sectionTitle}>
+          {t(q ? 'search.results' : recent === false ? 'search.suggested' : 'search.recent')}
+        </Text>
+      )}
 
       {shownRecipes.map((recipe) => (
         <Pressable
@@ -148,6 +159,22 @@ export function FoodSearch({ onSelectRecipe, onSelectProduct, onScan, selectedId
           style={product.id === selectedId && styles.selected}>
           <ProductCard product={product} />
         </Pressable>
+      ))}
+      {users.map((user) => (
+        <UserLink key={user.id} userId={user.id}>
+          <Card style={styles.userRow}>
+            <View style={styles.avatar}>
+              {user.avatar_url ? (
+                <Image source={{ uri: user.avatar_url }} style={StyleSheet.absoluteFill} />
+              ) : (
+                <Icon sf="person.fill" md="person" size={20} tintColor={colors.textMuted} />
+              )}
+            </View>
+            <Text style={styles.nickname} numberOfLines={1}>
+              {user.nickname}
+            </Text>
+          </Card>
+        </UserLink>
       ))}
 
       {loading && <ActivityIndicator color={colors.primary} />}
@@ -233,6 +260,25 @@ const styles = StyleSheet.create({
   message: {
     ...typography.body,
     textAlign: 'center',
+  },
+  userRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primarySoft,
+    overflow: 'hidden',
+  },
+  nickname: {
+    ...typography.label,
+    flex: 1,
   },
   // Bordo blu del risultato scelto (design "Aggiungi ingrediente").
   selected: {

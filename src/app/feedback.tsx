@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { useFocusData } from '@/components/food-detail';
 import { Icon } from '@/components/icon';
+import { UserLink } from '@/components/profile-summary';
 import {
   deleteFeedback,
   editFeedback,
@@ -300,16 +301,18 @@ function FeedbackCard({ item, onMenu }: { item: Feedback; onMenu?: () => void })
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        {item.author.avatar_url ? (
-          <Image source={{ uri: item.author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Icon sf="person.fill" md="person" size={11} />
-          </View>
-        )}
-        <Text style={styles.author} numberOfLines={1}>
-          {item.author.nickname}
-        </Text>
+        <UserLink userId={item.author.id} dismiss style={[styles.header, styles.reviewAuthorLink]}>
+          {item.author.avatar_url ? (
+            <Image source={{ uri: item.author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Icon sf="person.fill" md="person" size={11} />
+            </View>
+          )}
+          <Text style={styles.author} numberOfLines={1}>
+            {item.author.nickname}
+          </Text>
+        </UserLink>
         <Text style={styles.time}>{timeAgo(item.created_at)}</Text>
         {onMenu && (
           <Pressable
@@ -346,16 +349,18 @@ function CommentCard({ comment, onLike }: { comment: PostComment; onLike: () => 
     <View style={[styles.card, styles.commentCard]}>
       <View style={styles.commentText}>
         <View style={styles.header}>
-          {comment.author.avatar_url ? (
-            <Image source={{ uri: comment.author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Icon sf="person.fill" md="person" size={11} />
-            </View>
-          )}
-          <Text style={styles.commentAuthor} numberOfLines={1}>
-            {comment.author.nickname}
-          </Text>
+          <UserLink userId={comment.author.id} dismiss style={[styles.header, styles.authorLink]}>
+            {comment.author.avatar_url ? (
+              <Image source={{ uri: comment.author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Icon sf="person.fill" md="person" size={11} />
+              </View>
+            )}
+            <Text style={styles.commentAuthor} numberOfLines={1}>
+              {comment.author.nickname}
+            </Text>
+          </UserLink>
           <Text style={styles.time}>{timeAgo(comment.created_at)}</Text>
         </View>
         <Text style={styles.commentBody}>{comment.body}</Text>
@@ -409,6 +414,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  authorLink: {
+    flexShrink: 1,
+  },
+  // Come prima `author` (flex 1): tempo e menu restano a destra.
+  reviewAuthorLink: {
+    flex: 1,
   },
   commentCard: {
     flexDirection: 'row',

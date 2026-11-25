@@ -21,6 +21,7 @@ import { defaultQuantity, isValidQuantity, parseQuantity } from '@/components/qu
 import { SegmentedControl } from '@/components/segmented-control';
 import { scaleNutrition, type Food, type QuantityMode } from '@/lib/diary';
 import { FollowButton } from '@/components/follow-button';
+import { UserLink } from '@/components/profile-summary';
 import { fetchRecipe, formatIngredient, formatPrepTime, portionFactor, servingInfo, type RecipeDetail } from '@/lib/food';
 import { t } from '@/lib/i18n';
 import { saveRecipe } from '@/lib/feed';
@@ -335,16 +336,18 @@ function Author({ recipe: r }: { recipe: RecipeDetail }) {
 
   return (
     <View style={styles.row}>
-      {author.avatar_url ? (
-        <Image source={{ uri: author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
-      ) : (
-        <View style={[styles.avatar, styles.avatarPlaceholder]}>
-          <Icon sf="person.fill" md="person" size={16} />
-        </View>
-      )}
-      <Text style={[typography.label, styles.grow]} numberOfLines={1}>
-        {author.nickname}
-      </Text>
+      <UserLink userId={author.id} style={[styles.row, styles.grow]}>
+        {author.avatar_url ? (
+          <Image source={{ uri: author.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPlaceholder]}>
+            <Icon sf="person.fill" md="person" size={16} />
+          </View>
+        )}
+        <Text style={[typography.label, styles.grow]} numberOfLines={1}>
+          {author.nickname}
+        </Text>
+      </UserLink>
       {!r.is_mine && <FollowButton userId={author.id} following={following} onChange={setFollowing} />}
     </View>
   );

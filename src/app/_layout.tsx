@@ -79,6 +79,7 @@ export default function RootLayout() {
               <Stack.Screen name="diary-chart" />
               <Stack.Screen name="recipe" />
               <Stack.Screen name="product" />
+              <Stack.Screen name="user" />
               <Stack.Screen
                 name="feedback"
                 options={{ presentation: 'formSheet', contentStyle: { backgroundColor: colors.sheetBackground }, sheetAllowedDetents: [0.6, 0.95], sheetGrabberVisible: true }}

@@ -396,6 +396,12 @@ export const en = {
       posts: 'No published posts',
     },
   },
+  userProfile: {
+    sections: {
+      recipes: 'Recipes',
+      posts: 'Posts',
+    },
+  },
   profileSetup: {
     title: 'Complete your profile',
     editTitle: 'Edit your profile',

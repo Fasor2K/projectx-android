@@ -128,3 +128,19 @@ export const ProfileContext = createContext<{
 }>({ profile: undefined, setProfile: () => {} });
 
 export const useProfile = () => useContext(ProfileContext);
+
+/** get-user-profile: profilo di un altro utente; is_diabetic / is_celiac null se il tipo di utente non è pubblico. */
+export type UserProfile = {
+  profile: Pick<Profile, 'id' | 'nickname' | 'avatar_url' | 'bio' | 'user_type_public'> & {
+    is_diabetic: boolean | null;
+    is_celiac: boolean | null;
+    is_following: boolean;
+    is_me: boolean;
+  };
+  stats: ProfileStats;
+  recipes: { id: string; title: string; cover_image_url: string | null }[];
+  posts: MyPost[];
+};
+
+export const fetchUserProfile = (id: string) =>
+  invoke<UserProfile>(`get-user-profile?${new URLSearchParams({ id })}`, { method: 'GET' });

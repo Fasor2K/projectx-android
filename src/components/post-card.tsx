@@ -4,6 +4,7 @@ import { Alert, Image, Pressable, Share, StyleSheet, Text, View } from 'react-na
 
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
+import { UserLink } from '@/components/profile-summary';
 import { timeAgo } from '@/lib/food';
 import { t } from '@/lib/i18n';
 import { deletePost, likePost, type MyPost } from '@/lib/profile';
@@ -13,7 +14,8 @@ const AVATAR_SIZE = 36;
 
 type Props = {
   post: MyPost;
-  author: { nickname: string; avatar_url: string | null };
+  /** Con `id` foto e nome aprono il Profilo utente (o il tab Profilo se è l'utente loggato). */
+  author: { id?: string; nickname: string; avatar_url: string | null };
   onLike: () => void;
   /** Solo per i propri post: mostra il menu "…" (Modifica, Elimina) ed è chiamata dopo l'eliminazione. */
   onDeleted?: () => void;
@@ -56,28 +58,30 @@ export function PostCard({ post, author, onLike, onDeleted, action, showCommunit
   return (
     <Card>
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          {author.avatar_url ? (
-            <Image source={{ uri: author.avatar_url }} style={StyleSheet.absoluteFill} />
-          ) : (
-            <Icon sf="person.fill" md="person" size={20} tintColor={colors.textMuted} />
-          )}
-        </View>
-        <View style={styles.author}>
-          <Text style={styles.nickname}>{author.nickname}</Text>
-          <View style={styles.meta}>
-            <Text style={typography.caption}>{timeAgo(post.created_at)}</Text>
-            {showCommunity && (
-              <>
-                <Text style={typography.caption}> • </Text>
-                <Icon sf={general ? 'globe' : 'lock'} md={general ? 'public' : 'lock'} size={12} tintColor={colors.textSecondary} />
-                <Text style={typography.caption}>
-                  {t(general ? 'newPost.general' : `profileSetup.communities.${post.community}`)}
-                </Text>
-              </>
+        <AuthorLink userId={author.id}>
+          <View style={styles.avatar}>
+            {author.avatar_url ? (
+              <Image source={{ uri: author.avatar_url }} style={StyleSheet.absoluteFill} />
+            ) : (
+              <Icon sf="person.fill" md="person" size={20} tintColor={colors.textMuted} />
             )}
           </View>
-        </View>
+          <View style={styles.author}>
+            <Text style={styles.nickname}>{author.nickname}</Text>
+            <View style={styles.meta}>
+              <Text style={typography.caption}>{timeAgo(post.created_at)}</Text>
+              {showCommunity && (
+                <>
+                  <Text style={typography.caption}> • </Text>
+                  <Icon sf={general ? 'globe' : 'lock'} md={general ? 'public' : 'lock'} size={12} tintColor={colors.textSecondary} />
+                  <Text style={typography.caption}>
+                    {t(general ? 'newPost.general' : `profileSetup.communities.${post.community}`)}
+                  </Text>
+                </>
+              )}
+            </View>
+          </View>
+        </AuthorLink>
         {onDeleted ? (
           <Pressable onPress={openMenu} accessibilityRole="button" accessibilityLabel={t('profile.post.more')} hitSlop={spacing.md}>
             <Icon sf="ellipsis" md="more_horiz" size={20} tintColor={colors.text} />
@@ -128,6 +132,17 @@ export function PostCard({ post, author, onLike, onDeleted, action, showCommunit
   );
 }
 
+/** UserLink se c'è l'autore da aprire, altrimenti la stessa riga senza tocco. */
+function AuthorLink({ userId, children }: { userId?: string; children: ReactNode }) {
+  return userId ? (
+    <UserLink userId={userId} style={styles.authorLink}>
+      {children}
+    </UserLink>
+  ) : (
+    <View style={styles.authorLink}>{children}</View>
+  );
+}
+
 /** Lista di post con il Mi piace ottimistico: il cuore cambia subito e torna com'era se like-post fallisce. */
 export function usePosts<T extends MyPost>() {
   const [posts, setPosts] = useState<T[]>();
@@ -161,6 +176,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primarySoft,
     overflow: 'hidden',
+  },
+  authorLink: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
   author: {
     flex: 1,

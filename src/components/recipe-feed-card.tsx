@@ -6,6 +6,7 @@ import { Card } from '@/components/card';
 import { Macros, recipeNutrition } from '@/components/food-card';
 import { FollowButton } from '@/components/follow-button';
 import { Icon } from '@/components/icon';
+import { UserLink } from '@/components/profile-summary';
 import type { FeedRecipe } from '@/lib/feed';
 import { timeAgo } from '@/lib/food';
 import { t } from '@/lib/i18n';
@@ -52,19 +53,21 @@ export function RecipeFeedCard({ recipe: r, own, onFollow, onSave }: Props) {
           <View style={styles.author}>
             {r.author ? (
               <>
-                <View style={styles.avatar}>
-                  {r.author.avatar_url ? (
-                    <Image source={{ uri: r.author.avatar_url }} style={StyleSheet.absoluteFill} />
-                  ) : (
-                    <Icon sf="person.fill" md="person" size={16} tintColor={colors.textMuted} />
-                  )}
-                </View>
-                <View style={styles.grow}>
-                  <Text style={styles.nickname} numberOfLines={1}>
-                    {r.author.nickname}
-                  </Text>
-                  <Text style={typography.caption}>{timeAgo(r.published_at)}</Text>
-                </View>
+                <UserLink userId={r.author.id} style={[styles.author, styles.grow]}>
+                  <View style={styles.avatar}>
+                    {r.author.avatar_url ? (
+                      <Image source={{ uri: r.author.avatar_url }} style={StyleSheet.absoluteFill} />
+                    ) : (
+                      <Icon sf="person.fill" md="person" size={16} tintColor={colors.textMuted} />
+                    )}
+                  </View>
+                  <View style={styles.grow}>
+                    <Text style={styles.nickname} numberOfLines={1}>
+                      {r.author.nickname}
+                    </Text>
+                    <Text style={typography.caption}>{timeAgo(r.published_at)}</Text>
+                  </View>
+                </UserLink>
                 {!own && <FollowButton userId={r.author.id} following={r.author.following} onChange={onFollow} />}
               </>
             ) : (

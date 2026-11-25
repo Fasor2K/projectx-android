@@ -400,6 +400,12 @@ export const it: typeof en = {
       posts: 'Nessun post pubblicato',
     },
   },
+  userProfile: {
+    sections: {
+      recipes: 'Ricette',
+      posts: 'Post',
+    },
+  },
   profileSetup: {
     title: 'Completa il tuo profilo',
     editTitle: 'Modifica il tuo profilo',

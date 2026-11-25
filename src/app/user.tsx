@@ -9,7 +9,7 @@ import { ProfileEmpty, ProfileSummary, RecipeGrid } from '@/components/profile-s
 import { SegmentedControl } from '@/components/segmented-control';
 import { t } from '@/lib/i18n';
 import { fetchUserProfile, type UserProfile } from '@/lib/profile';
-import { spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 
 const sections = ['recipes', 'posts'] as const;
 type Section = (typeof sections)[number];
@@ -44,7 +44,14 @@ function UserContent({ data }: { data: UserProfile }) {
     <DetailLayout>
       {/* Accanto al pulsante indietro fisso di DetailLayout. */}
       <View style={styles.topBar}>
-        {!profile.is_me && <FollowButton userId={profile.id} following={following} onChange={setFollowing} />}
+        {!profile.is_me && (
+          <FollowButton
+            userId={profile.id}
+            following={following}
+            onChange={setFollowing}
+            followingStyle={styles.following}
+          />
+        )}
       </View>
 
       <ProfileSummary user={profile} stats={{ ...data.stats, followers_count: followers }} />
@@ -84,6 +91,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  following: {
+    backgroundColor: colors.surface,
   },
   posts: {
     gap: spacing.lg,

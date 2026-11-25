@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   badge: {
     ...typography.label,
     color: colors.onPrimary,
-    backgroundColor: colors.primary,
+    backgroundColor: "#1d8acf",
     borderRadius: radius.pill,
     overflow: 'hidden',
     paddingHorizontal: spacing.md,

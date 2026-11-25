@@ -356,6 +356,11 @@ export const it: typeof en = {
   profile: {
     loadFailed: 'Non siamo riusciti a caricare il tuo profilo. Controlla la connessione e riprova.',
     title: 'Il mio profilo',
+    unsave: {
+      title: 'Togliere dalle ricette salvate?',
+      confirm: 'Rimuovi',
+      hint: 'Tieni premuto per toglierla dalle ricette salvate.',
+    },
     settings: 'Impostazioni',
     userTypes: {
       generic: 'Generico',

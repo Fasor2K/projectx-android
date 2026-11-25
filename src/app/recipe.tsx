@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState, type ComponentProps, type ReactNode } from 'react';
+import { ActivityIndicator, Alert, Image, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -23,6 +23,7 @@ import { scaleNutrition, type Food, type QuantityMode } from '@/lib/diary';
 import { FollowButton } from '@/components/follow-button';
 import { fetchRecipe, formatIngredient, formatPrepTime, portionFactor, servingInfo, type RecipeDetail } from '@/lib/food';
 import { t } from '@/lib/i18n';
+import { saveRecipe } from '@/lib/feed';
 import { deleteRecipe } from '@/lib/recipe-form';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -31,6 +32,7 @@ type IngredientsView = 'recipe' | 'mine';
 /**
  * Dettaglio ricetta: autore e Segui, bilancio nutrizionale e ingredienti ricalcolati sulla quantità scelta
  * ("mia porzione"), procedimento, note, categorie, recensioni e segnalazioni, Aggiungi a pasto.
+ * Accanto al titolo: Salva / Salvata e Condividi.
  * Sulle proprie ricette, accanto ad Aggiungi a pasto: modifica (riapre Nuova ricetta) ed elimina.
  */
 export default function RecipeScreen() {
@@ -56,6 +58,16 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
   const [quantity, setQuantity] = useState(defaultQuantity(modes[0]));
   const [view, setView] = useState<IngredientsView>('recipe');
   const [deleting, setDeleting] = useState(false);
+  const [saved, setSaved] = useState(r.saved);
+
+  // Ottimistico come nelle card della Home: torna com'era se save-recipe fallisce.
+  function toggleSave() {
+    setSaved(!saved);
+    saveRecipe(r.id, !saved).catch(() => {
+      setSaved(saved);
+      Alert.alert(t('home.recipe.saveFailed'));
+    });
+  }
 
   const amount = parseQuantity(quantity);
   const valid = isValidQuantity(amount);
@@ -118,9 +130,24 @@ function RecipeContent({ recipe: r }: { recipe: RecipeDetail }) {
       }>
       <Cover uri={r.cover_image_url} />
       <View style={styles.heading}>
-        <Text style={styles.title} accessibilityRole="header">
-          {r.title}
-        </Text>
+        <View style={styles.row}>
+          <Text style={[styles.title, styles.grow]} accessibilityRole="header">
+            {r.title}
+          </Text>
+          <TitleAction
+            sf={saved ? 'bookmark.fill' : 'bookmark'}
+            md="bookmark"
+            label={t(saved ? 'home.recipe.saved' : 'home.recipe.save')}
+            selected={saved}
+            onPress={toggleSave}
+          />
+          <TitleAction
+            sf="square.and.arrow.up"
+            md="share"
+            label={t('home.recipe.share')}
+            onPress={() => Share.share({ message: r.title })}
+          />
+        </View>
         <View style={styles.row}>
           <Rating value={r.rating_avg} />
           {r.is_private && <Pill label={t('foodDetail.private')} />}
@@ -274,6 +301,26 @@ function RoundButton({
       <GlassSurface interactive style={styles.roundButton}>
         {children}
       </GlassSurface>
+    </Pressable>
+  );
+}
+
+/** Icona accanto al titolo (Salva, Condividi). */
+function TitleAction({
+  sf,
+  md,
+  label,
+  selected,
+  onPress,
+}: Pick<ComponentProps<typeof Icon>, 'sf' | 'md'> & { label: string; selected?: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      hitSlop={spacing.sm}>
+      <Icon sf={sf} md={md} size={24} tintColor={selected ? colors.primary : colors.text} />
     </Pressable>
   );
 }

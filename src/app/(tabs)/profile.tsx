@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/card';
 import { GlassSurface } from '@/components/glass-surface';
@@ -8,6 +8,7 @@ import { Icon } from '@/components/icon';
 import { PostCard, usePosts } from '@/components/post-card';
 import { Screen } from '@/components/screen';
 import { SegmentedControl } from '@/components/segmented-control';
+import { saveRecipe } from '@/lib/feed';
 import { i18n, t } from '@/lib/i18n';
 import {
   fetchMyPosts,
@@ -44,6 +45,22 @@ export default function Profile() {
       fetchMyPosts().then(setPosts, () => {});
     }, [setPosts]),
   );
+
+  // Pressione prolungata su una ricetta salvata: la toglie dai salvati dopo conferma.
+  function confirmUnsave(recipe: MyRecipe) {
+    Alert.alert(t('profile.unsave.title'), recipe.title ?? undefined, [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('profile.unsave.confirm'),
+        style: 'destructive',
+        onPress: () =>
+          saveRecipe(recipe.id, false).then(
+            () => setSaved((list) => list?.filter((r) => r.id !== recipe.id)),
+            () => Alert.alert(t('home.recipe.saveFailed')),
+          ),
+      },
+    ]);
+  }
 
   if (!profile) return null;
 
@@ -119,7 +136,11 @@ export default function Profile() {
       {section !== 'posts' && (section === 'recipes' ? recipes : saved)?.length ? (
         <View style={styles.grid}>
           {(section === 'recipes' ? recipes : saved)!.map((recipe) => (
-            <RecipeTile key={recipe.id} recipe={recipe} />
+            <RecipeTile
+              key={recipe.id}
+              recipe={recipe}
+              onLongPress={section === 'saved' ? () => confirmUnsave(recipe) : undefined}
+            />
           ))}
         </View>
       ) : section === 'posts' && posts?.length ? (
@@ -145,7 +166,7 @@ export default function Profile() {
 }
 
 /** Ricetta della griglia: foto (o fotocamera), icona bozza o lucchetto; le pubblicate aprono il dettaglio, le bozze il form. */
-function RecipeTile({ recipe }: { recipe: MyRecipe }) {
+function RecipeTile({ recipe, onLongPress }: { recipe: MyRecipe; onLongPress?: () => void }) {
   const badge = recipe.is_draft
     ? ({ sf: 'doc.text', md: 'edit_note', label: t('profile.draft') } as const)
     : recipe.is_private
@@ -159,8 +180,12 @@ function RecipeTile({ recipe }: { recipe: MyRecipe }) {
           ? router.push({ pathname: '/new-recipe', params: { draft: recipe.id } })
           : router.push({ pathname: '/recipe', params: { id: recipe.id } })
       }
+      onLongPress={onLongPress}
       accessibilityRole="button"
       accessibilityLabel={badge ? `${title}, ${badge.label}` : title}
+      accessibilityHint={onLongPress && t('profile.unsave.hint')}
+      accessibilityActions={onLongPress && [{ name: 'longpress', label: t('profile.unsave.confirm') }]}
+      onAccessibilityAction={onLongPress}
       style={styles.tile}>
       {recipe.cover_image_url ? (
         <Image source={{ uri: recipe.cover_image_url }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />

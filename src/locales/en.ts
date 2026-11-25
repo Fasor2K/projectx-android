@@ -352,6 +352,11 @@ export const en = {
   profile: {
     loadFailed: "We couldn't load your profile. Check your connection and try again.",
     title: 'My profile',
+    unsave: {
+      title: 'Remove from saved recipes?',
+      confirm: 'Remove',
+      hint: 'Touch and hold to remove it from saved recipes.',
+    },
     settings: 'Settings',
     userTypes: {
       generic: 'General',

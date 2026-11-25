@@ -30,6 +30,7 @@ export type RecipeDetail = {
   rating_count: number;
   is_mine: boolean;
   is_private: boolean;
+  saved: boolean;
   /** null = account eliminato. */
   author: { id: string; nickname: string; avatar_url: string | null; is_following: boolean } | null;
   ingredients: {

@@ -12,6 +12,7 @@ import { i18n, t } from '@/lib/i18n';
 import {
   fetchMyPosts,
   fetchMyRecipes,
+  fetchSavedRecipes,
   fetchProfileStats,
   useProfile,
   type MyPost,
@@ -25,11 +26,12 @@ const AVATAR_SIZE = 96;
 const sections = ['recipes', 'saved', 'posts'] as const;
 type Section = (typeof sections)[number];
 
-/** Profilo dell'utente loggato. "Ricette salvate" non è ancora collegata: solo empty state. */
+/** Profilo dell'utente loggato: contatori, le sue ricette, le ricette salvate e i suoi post. */
 export default function Profile() {
   const { profile } = useProfile();
   const [stats, setStats] = useState<ProfileStats>();
   const [recipes, setRecipes] = useState<MyRecipe[]>();
+  const [saved, setSaved] = useState<MyRecipe[]>();
   const { posts, setPosts, toggleLike } = usePosts<MyPost>();
   const [section, setSection] = useState<Section>('recipes');
 
@@ -38,6 +40,7 @@ export default function Profile() {
     useCallback(() => {
       fetchProfileStats().then(setStats, () => {});
       fetchMyRecipes().then(setRecipes, () => {});
+      fetchSavedRecipes().then(setSaved, () => {});
       fetchMyPosts().then(setPosts, () => {});
     }, [setPosts]),
   );
@@ -113,9 +116,9 @@ export default function Profile() {
         label={(value) => t(`profile.sections.${value}`)}
       />
 
-      {section === 'recipes' && recipes?.length ? (
+      {section !== 'posts' && (section === 'recipes' ? recipes : saved)?.length ? (
         <View style={styles.grid}>
-          {recipes.map((recipe) => (
+          {(section === 'recipes' ? recipes : saved)!.map((recipe) => (
             <RecipeTile key={recipe.id} recipe={recipe} />
           ))}
         </View>

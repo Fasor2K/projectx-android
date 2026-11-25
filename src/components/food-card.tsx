@@ -124,20 +124,16 @@ export function RecipeCard({ recipe: r }: { recipe: Recipe }) {
       imageUrl={r.cover_image_url}
       rating={r.rating_avg}
       nutritionNote={r.guide_name ? t('food.perGuide', { name: r.guide_name }) : undefined}
-      nutrition={
-        // Il backend li manda tutti insieme: tutti numeri o tutti null.
-        r.carbs_g_100 === null
-          ? undefined
-          : {
-              carbs: r.carbs_g_100,
-              fat: r.fat_g_100!,
-              protein: r.protein_g_100!,
-              fiber: r.fiber_g_100!,
-              kcal: r.kcal_100!,
-            }
-      }
+      nutrition={recipeNutrition(r)}
     />
   );
+}
+
+/** Valori per 100 g di una ricetta di search-recipes; undefined se il peso non è noto. */
+export function recipeNutrition(r: Recipe): Nutrition | undefined {
+  // Il backend li manda tutti insieme: tutti numeri o tutti null.
+  if (r.carbs_g_100 === null) return undefined;
+  return { carbs: r.carbs_g_100, fat: r.fat_g_100!, protein: r.protein_g_100!, fiber: r.fiber_g_100!, kcal: r.kcal_100! };
 }
 
 const styles = StyleSheet.create({

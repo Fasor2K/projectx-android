@@ -67,7 +67,7 @@ export default function NewPost() {
         method: 'POST',
         body: { id: params.id, body: body.trim(), community: community ?? null, image_base64: photo?.base64 },
       });
-      markFeedStale();
+      markFeedStale('post');
       setPublished(true);
     } catch (e) {
       const code = e instanceof ApiError ? e.code : undefined;

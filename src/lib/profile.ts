@@ -71,6 +71,11 @@ export type MyRecipe = {
 
 export const fetchMyRecipes = async () =>
   (await invoke<{ recipes: MyRecipe[] }>('get-my-recipes', { method: 'GET' })).recipes;
+/** get-saved-recipes: ricette salvate ancora visibili, dalla più recente, nella forma della griglia del Profilo. */
+export const fetchSavedRecipes = async (): Promise<MyRecipe[]> =>
+  (await invoke<{ recipes: { id: string; title: string; cover_image_url: string | null }[] }>('get-saved-recipes', { method: 'GET' })).recipes.map(
+    (r) => ({ id: r.id, title: r.title, cover_image_url: r.cover_image_url, is_draft: false, is_private: false }),
+  );
 /** get-my-posts: post dell'utente per la sezione "Post" del Profilo. community null = Generale. */
 export type MyPost = {
   id: string;

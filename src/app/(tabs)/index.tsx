@@ -1,168 +1,170 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { ChoiceButton } from '@/components/choice-button';
 import { FollowButton } from '@/components/follow-button';
+import { GlassSurface } from '@/components/glass-surface';
+import { Icon } from '@/components/icon';
 import { PostCard, usePosts } from '@/components/post-card';
+import { RecipeFeedCard } from '@/components/recipe-feed-card';
 import { SegmentedControl } from '@/components/segmented-control';
-import { FEED_PAGE_SIZE, fetchPostFeed, markFeedSeen, takeFeedStale, type FeedPost } from '@/lib/feed';
+import {
+  fetchPostFeed,
+  fetchRecipeFeed,
+  saveRecipe,
+  takeAddedToMeal,
+  useFeed,
+  type FeedPost,
+  type FeedRecipe,
+} from '@/lib/feed';
 import { t } from '@/lib/i18n';
 import { useProfile, type Community } from '@/lib/profile';
+import { useSearchFilters } from '@/lib/search';
 import { backgroundGradient, colors, radius, spacing, tabBarHeight, typography } from '@/theme';
 
 const sections = ['recipes', 'posts'] as const;
 type Section = (typeof sections)[number];
 type Chip = Community | 'general';
 
-const SEEN_BATCH = 10;
-
 /**
- * Home: tab Ricette (vuoto per ora) e Post, il feed personalizzato (get-post-feed) a pagine con lo stesso anchor.
- * Chi ha community sceglie con i chip una sua community o Generale; chi non ne ha vede solo Generale, senza chip.
- * I post mostrati sullo schermo si mandano a mark-feed-seen a gruppi.
+ * Home: tab Ricette e Post, due feed personalizzati (get-recipe-feed, get-post-feed) a pagine con lo stesso anchor.
+ * Ricette: filtri per tag condivisi con Cerca (sheet `search-filters`). Post: chi ha community sceglie con i chip una
+ * sua community o Generale; chi non ne ha vede solo Generale, senza chip. Gli elementi mostrati vanno a mark-feed-seen.
  */
 export default function Home() {
   const { profile } = useProfile();
   const insets = useSafeAreaInsets();
-  const [section, setSection] = useState<Section>('posts');
+  const { tags } = useSearchFilters();
+  const [section, setSection] = useState<Section>('recipes');
   const chips: Chip[] = profile?.communities.length ? [...profile.communities, 'general'] : [];
   const [chip, setChip] = useState<Chip>();
   // Il chip scelto può sparire se l'utente lascia la community dalle Impostazioni: si torna al primo.
   const selected = chip && chips.includes(chip) ? chip : chips[0];
-  const community = selected ?? null;
 
   const { posts, setPosts, toggleLike } = usePosts<FeedPost>();
-  const [error, setError] = useState(false);
+  const [recipes, setRecipes] = useState<FeedRecipe[]>();
+  const postFeed = useFeed('post', fetchPostFeed, setPosts);
+  const recipeFeed = useFeed('recipe', fetchRecipeFeed, setRecipes);
   const [refreshing, setRefreshing] = useState(false);
-  // token: le risposte di una lettura superata (chip cambiato, ricarica) si scartano; 0 = mai letto.
-  // community: quella dell'ultima prima pagina, per ricaricare se l'utente cambia community dalle Impostazioni.
-  const page = useRef({
-    anchor: undefined as string | undefined,
-    fetched: 0,
-    done: false,
-    loading: false,
-    token: 0,
-    community: null as Chip | null,
-  });
 
-  /** reset = prima pagina con un nuovo anchor; altrimenti la pagina successiva. */
-  const load = useCallback(
-    async (feedCommunity: Chip | null, reset: boolean) => {
-      const p = page.current;
-      if (!reset && (p.loading || p.done)) return;
-      if (reset) Object.assign(p, { anchor: undefined, fetched: 0, done: false, token: p.token + 1, community: feedCommunity });
-      const token = p.token;
-      p.loading = true;
-      try {
-        const r = await fetchPostFeed(feedCommunity, p.anchor, p.fetched);
-        if (token !== p.token) return;
-        p.anchor = r.anchor;
-        p.fetched += r.posts.length;
-        p.done = r.posts.length < FEED_PAGE_SIZE;
-        // Tra una pagina e l'altra l'ordine può cambiare di poco: si deduplica per id.
-        setPosts((list) => (reset || !list ? r.posts : [...list, ...r.posts.filter((n) => !list.some((o) => o.id === n.id))]));
-        setError(false);
-      } catch {
-        if (token === p.token) setError(true);
-      } finally {
-        if (token === p.token) p.loading = false;
-      }
-    },
-    [setPosts],
-  );
+  const showPosts = section === 'posts';
+  const feed = showPosts ? postFeed : recipeFeed;
+  const items: (FeedPost | FeedRecipe)[] | undefined = showPosts ? posts : recipes;
+  // Chiave del feed mostrato: cambiarla (chip, filtri) ricarica da capo.
+  const key = showPosts ? (selected ?? null) : tags.join(',') || null;
 
-  const seen = useRef(new Set<string>());
-  const pending = useRef<string[]>([]);
-  const flushSeen = useCallback(() => {
-    const ids = pending.current.splice(0);
-    if (ids.length) markFeedSeen(ids).catch(() => {});
-  }, []);
-  // Deve restare la stessa funzione per tutta la vita della FlatList (flushSeen non cambia).
-  const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: { item: FeedPost }[] }) => {
-      for (const { item } of viewableItems) {
-        if (seen.current.has(item.id)) continue;
-        seen.current.add(item.id);
-        pending.current.push(item.id);
-      }
-      if (pending.current.length >= SEEN_BATCH) flushSeen();
-    },
-    [flushSeen],
-  );
-
-  // Prima lettura, e al ritorno sulla Home se un post è stato pubblicato o modificato o sono cambiate le community;
-  // uscendo manda i visti rimasti.
+  const { refreshIfNeeded } = feed;
+  const flushPosts = postFeed.flushSeen;
+  const flushRecipes = recipeFeed.flushSeen;
+  // Al focus e a ogni cambio di tab o di chiave: prima lettura o ricarica se serve, e le ricette aggiunte a un pasto
+  // altrove diventano "Aggiunto a pasto". Uscendo si mandano i visti rimasti.
   useFocusEffect(
     useCallback(() => {
-      const p = page.current;
-      if (takeFeedStale() || p.token === 0 || p.community !== community) load(community, true);
-      return flushSeen;
-    }, [load, flushSeen, community]),
+      const added = takeAddedToMeal();
+      if (added.length) setRecipes((list) => list?.map((r) => (added.includes(r.id) ? { ...r, in_meal_today: true } : r)));
+      refreshIfNeeded(key);
+      return () => {
+        flushPosts();
+        flushRecipes();
+      };
+    }, [refreshIfNeeded, key, flushPosts, flushRecipes]),
   );
-
-  function selectChip(value: Chip) {
-    if (value === selected) return;
-    setChip(value);
-    setPosts(undefined);
-    setError(false);
-    load(value, true);
-  }
 
   async function refresh() {
     setRefreshing(true);
-    await load(community, true);
+    await feed.load(key, true);
     setRefreshing(false);
   }
 
+  // Seguire un autore vale per tutti i suoi post e le sue ricette.
   function setFollowing(authorId: string, following: boolean) {
-    setPosts((list) => list?.map((p) => (p.author.id === authorId ? { ...p, author: { ...p.author, following } } : p)));
+    const update = <T extends FeedPost | FeedRecipe>(list: T[] | undefined) =>
+      list?.map((item) => (item.author?.id === authorId ? { ...item, author: { ...item.author, following } } : item));
+    setPosts(update);
+    setRecipes(update);
   }
 
-  const showPosts = section === 'posts';
+  // Ottimistico: torna com'era se save-recipe fallisce.
+  function toggleSave(recipe: FeedRecipe) {
+    const setSaved = (saved: boolean) => setRecipes((list) => list?.map((r) => (r.id === recipe.id ? { ...r, saved } : r)));
+    setSaved(!recipe.saved);
+    saveRecipe(recipe.id, !recipe.saved).catch(() => {
+      setSaved(recipe.saved);
+      Alert.alert(t('home.recipe.saveFailed'), t('authErrors.generic'));
+    });
+  }
+
+  function renderItem({ item }: { item: FeedPost | FeedRecipe }) {
+    const own = item.author?.id === profile?.id;
+    if (!('body' in item)) {
+      return (
+        <RecipeFeedCard
+          recipe={item}
+          own={own}
+          onFollow={(following) => setFollowing(item.author!.id, following)}
+          onSave={() => toggleSave(item)}
+        />
+      );
+    }
+    return (
+      <PostCard
+        post={item}
+        author={item.author}
+        onLike={() => toggleLike(item)}
+        onDeleted={own ? () => setPosts((list) => list?.filter((p) => p.id !== item.id)) : undefined}
+        action={
+          !own && (
+            <FollowButton
+              userId={item.author.id}
+              following={item.author.following}
+              onChange={(following) => setFollowing(item.author.id, following)}
+            />
+          )
+        }
+      />
+    );
+  }
+
   // Su iOS il tab Home non ha gli inset automatici (_layout.tsx): la tab bar è a carico della lista.
   const bottomInset = insets.bottom + (Platform.OS === 'ios' ? tabBarHeight : 0);
 
   return (
     <FlatList
+      // Una lista per tab: onViewableItemsChanged non può cambiare sulla stessa FlatList.
+      key={section}
       style={styles.root}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl, paddingBottom: bottomInset + spacing.xl }]}
       scrollIndicatorInsets={{ top: insets.top, bottom: bottomInset }}
-      data={showPosts ? posts : []}
-      keyExtractor={(post) => post.id}
-      renderItem={({ item }) => {
-        const own = item.author.id === profile?.id;
-        return (
-          <PostCard
-            post={item}
-            author={item.author}
-            onLike={() => toggleLike(item)}
-            onDeleted={own ? () => setPosts((list) => list?.filter((p) => p.id !== item.id)) : undefined}
-            action={
-              !own && (
-                <FollowButton
-                  userId={item.author.id}
-                  following={item.author.following}
-                  onChange={(following) => setFollowing(item.author.id, following)}
-                />
-              )
-            }
-          />
-        );
-      }}
-      onViewableItemsChanged={onViewableItemsChanged}
+      data={items}
+      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+      onViewableItemsChanged={feed.onViewableItemsChanged}
       viewabilityConfig={{ itemVisiblePercentThreshold: 60, minimumViewTime: 500 }}
-      onEndReached={() => showPosts && posts && load(community, false)}
+      onEndReached={() => items && feed.load(key, false)}
       onEndReachedThreshold={0.5}
       refreshing={refreshing}
-      onRefresh={showPosts ? refresh : undefined}
+      onRefresh={refresh}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Text style={typography.screenTitle} accessibilityRole="header">
-            Foodity
-          </Text>
+          <View style={styles.topBar}>
+            <Text style={typography.screenTitle} accessibilityRole="header">
+              Foodity
+            </Text>
+            {!showPosts && (
+              <Pressable
+                onPress={() => router.push('/search-filters')}
+                accessibilityRole="button"
+                accessibilityLabel={t('search.filters', { count: tags.length })}
+                hitSlop={spacing.sm}>
+                <GlassSurface interactive style={styles.roundButton}>
+                  <Icon sf="line.3.horizontal.decrease" md="filter_list" size={24} tintColor={tags.length ? colors.primary : colors.text} />
+                </GlassSurface>
+              </Pressable>
+            )}
+          </View>
           <SegmentedControl options={sections} value={section} onChange={setSection} label={(value) => t(`home.sections.${value}`)} />
           {showPosts && chips.length > 0 && (
             <ScrollView
@@ -175,7 +177,7 @@ export default function Home() {
                   key={value}
                   label={t(value === 'general' ? 'newPost.general' : `profileSetup.communities.${value}`)}
                   selected={value === selected}
-                  onPress={() => selectChip(value)}
+                  onPress={() => setChip(value)}
                   style={styles.chip}
                 />
               ))}
@@ -184,14 +186,14 @@ export default function Home() {
         </View>
       }
       ListEmptyComponent={
-        !showPosts ? undefined : error ? (
+        feed.error ? (
           <View style={styles.empty}>
-            <Text style={styles.message}>{t('home.loadFailed')}</Text>
-            <Button title={t('common.retry')} onPress={() => load(community, true)} />
+            <Text style={styles.message}>{t(showPosts ? 'home.loadFailed' : 'home.recipesLoadFailed')}</Text>
+            <Button title={t('common.retry')} onPress={() => feed.load(key, true)} />
           </View>
-        ) : posts ? (
+        ) : items ? (
           <View style={styles.empty}>
-            <Text style={typography.title}>{t('home.noPosts')}</Text>
+            <Text style={typography.title}>{t(showPosts ? 'home.noPosts' : 'home.noRecipes')}</Text>
           </View>
         ) : (
           <ActivityIndicator style={styles.empty} color={colors.primary} />
@@ -213,6 +215,20 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: spacing.lg,
+  },
+  topBar: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  roundButton: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   // Riga unica: su schermi stretti scorre, sbordando nel padding della lista fino ai bordi.
   chipsScroll: {

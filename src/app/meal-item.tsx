@@ -35,6 +35,7 @@ import {
 } from "@/lib/diary";
 import { t } from "@/lib/i18n";
 import { mealTypes, type MealType } from "@/lib/notifications";
+import { markAddedToMeal } from "@/lib/feed";
 import { ApiError } from "@/lib/profile";
 import { colors, radius, spacing, typography } from "@/theme";
 
@@ -73,6 +74,8 @@ export default function MealItemSheet() {
     mode?: string;
     /** "1" se la ricetta ha l'ingrediente guida (dal dettaglio ricetta). */
     guide?: string;
+    /** "1" dalla Home: dopo l'aggiunta si chiude lo sheet invece di aprire Componi pasto. */
+    stay?: string;
   }>();
   const item: MealItem | undefined = params.item
     ? JSON.parse(params.item)
@@ -157,7 +160,8 @@ export default function MealItemSheet() {
         quantity: Math.round(amount * 100) / 100,
         quantity_mode: mode,
       });
-      if (item) {
+      if (!item && source.recipe_id) markAddedToMeal(source.recipe_id);
+      if (item || params.stay) {
         router.back();
       } else {
         // Dal dettaglio: chiude sheet e schermate sopra i tab e apre Componi pasto sul pasto scelto.

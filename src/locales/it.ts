@@ -195,6 +195,16 @@ export const it: typeof en = {
     },
     noPosts: 'Ancora nessun post',
     loadFailed: 'Non siamo riusciti a caricare i post.',
+    noRecipes: 'Nessuna ricetta da mostrare',
+    recipesLoadFailed: 'Non siamo riusciti a caricare le ricette.',
+    recipe: {
+      share: 'Condividi',
+      addToMeal: 'Aggiungi a pasto',
+      addedToMeal: 'Aggiunto a pasto',
+      save: 'Salva',
+      saved: 'Salvata',
+      saveFailed: 'Non siamo riusciti ad aggiornare le ricette salvate.',
+    },
   },
   newPost: {
     title: 'Nuovo post',

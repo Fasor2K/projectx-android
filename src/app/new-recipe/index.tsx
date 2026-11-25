@@ -12,6 +12,7 @@ import { Stepper } from '@/components/quantity-field';
 import { Screen } from '@/components/screen';
 import { SegmentedControl } from '@/components/segmented-control';
 import { SelectMenu } from '@/components/select-menu';
+import { markFeedStale } from '@/lib/feed';
 import { formatIngredient, formatPrepTime, type Difficulty } from '@/lib/food';
 import { t } from '@/lib/i18n';
 import { ApiError } from '@/lib/profile';
@@ -73,6 +74,8 @@ export default function NewRecipe() {
   // Dopo il salvataggio, quando usePreventRemove non blocca più l'uscita: pubblicata → dettaglio, bozza → Profilo.
   useEffect(() => {
     if (!saved) return;
+    // Pubblicata (nuova o modificata): la Home ricarica il feed delle ricette, dove una nuova compare prima.
+    if (published || saved.published) markFeedStale('recipe');
     if (published) router.back();
     else if (saved.published) router.replace({ pathname: '/recipe', params: { id: saved.id } });
     else {

@@ -191,6 +191,16 @@ export const en = {
     },
     noPosts: 'No posts yet',
     loadFailed: "We couldn't load the posts.",
+    noRecipes: 'No recipes to show',
+    recipesLoadFailed: "We couldn't load the recipes.",
+    recipe: {
+      share: 'Share',
+      addToMeal: 'Add to meal',
+      addedToMeal: 'Added to meal',
+      save: 'Save',
+      saved: 'Saved',
+      saveFailed: "We couldn't update your saved recipes.",
+    },
   },
   newPost: {
     title: 'New post',
